@@ -4,7 +4,6 @@
 finaltest
 push
 test7
-git_test final diff 관련
-dd
+git_test final diff sadsdf
 zz
-final test diff 관련
+final test diff wd
