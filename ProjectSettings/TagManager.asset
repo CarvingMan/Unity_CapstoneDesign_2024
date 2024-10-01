@@ -41,3 +41,9 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: BackGround
+    uniqueID: 3157970623
+    locked: 0
+  - name: Dungeon
+    uniqueID: 2616818939
+    locked: 0
