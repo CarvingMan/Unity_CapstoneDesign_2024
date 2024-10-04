@@ -5,7 +5,7 @@ using UnityEngine;
 public class MoveBackground : MonoBehaviour
 {
     /// <summary>
-    /// 배경화면은 parellax, 타일맵은 좌표이동.
+    /// 배경화면은 parallax, 타일맵은 좌표이동.
     /// Type별로 움직임 정의
     /// </summary>
 
