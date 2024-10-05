@@ -10,12 +10,21 @@ public class GameManager : MonoBehaviour
     // 다른 클래스에서 get은 가능하나 인스턴스 초기화는 오직 GameManager에서만 가능하다.
     public static GameManager Instance { get; private set; }
 
-    //레벨관리
+    
+     
+    //*** 능력치 레벨 ***//
     //float m_fMoveLv = 0;
+    
 
-    //MoveBackGround에서 사용할 값
-    private float m_fMoveStatus = 1; //이속능력치 1이면 100%, 레벨업시 증가
-    public float MoveStatus //m_fMoveStatus 프로퍼티
+    //*** 능력치 값 ***//
+    private float m_fMoveStatus = 1; //이동속도 능력치 1이면 100%, 레벨업시 증가
+
+
+    //이동관련 제어 멤버 변수 MoveBackGround,PlayerControl,MonsterControl등에서 사용
+    private bool m_isMove = false;
+    public bool IsMove { get { return m_isMove; }} //m_isMove 접근용 read only로 get만 가능
+
+    public float MoveStatus //m_fMoveStatus 접근용 프로퍼티
     {
         get { return m_fMoveStatus; }
         private set { m_fMoveStatus = value; }
@@ -49,7 +58,14 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if (Input.GetMouseButton(0))
+        {
+            m_isMove = true;
+        }
+        else
+        {
+            m_isMove = false;
+        }
     }
 
 }
