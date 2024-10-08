@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class PlayerControl : MonoBehaviour
 {
-
-
     //**애니메이션 관련**//
     Animator m_PlayerAnimator = null;
     
@@ -13,8 +11,6 @@ public class PlayerControl : MonoBehaviour
     void Start()
     {
         m_PlayerAnimator = GetComponent<Animator>();
-        m_PlayerAnimator.Play("player_attack");
-        
     }
 
     // Update is called once per frame
