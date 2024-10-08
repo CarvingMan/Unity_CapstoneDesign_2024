@@ -13,6 +13,7 @@ public class PlayerControl : MonoBehaviour
     void Start()
     {
         m_PlayerAnimator = GetComponent<Animator>();
+        m_PlayerAnimator.Play("player_attack");
         
     }
 
