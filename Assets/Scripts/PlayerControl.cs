@@ -6,10 +6,17 @@ public class PlayerControl : MonoBehaviour
 {
     //**애니메이션 관련**//
     Animator m_PlayerAnimator = null;
-    
+
+
+    //**공격관련**//
+    GameObject m_objCurrentMob = null; //현재 대치중인 몬스터
+
+   
+
     // Start is called before the first frame update
     void Start()
     {
+        GameManager.Instance.TakeObject(this.gameObject); //GameManager에 자신을 넘겨준다.
         m_PlayerAnimator = GetComponent<Animator>();
     }
 
@@ -17,6 +24,13 @@ public class PlayerControl : MonoBehaviour
     void Update()
     {
         SetAnimation();
+    }
+
+    //Raycast로 앞에 적이 있을 시 GameManager에 알려주고 전투 준비
+    void CheckEnemy()
+    {
+        RaycastHit2D hitEnemy;
+
     }
 
     //플레이어의 애니메이션 설정
