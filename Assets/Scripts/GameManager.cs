@@ -31,18 +31,16 @@ public class GameManager : MonoBehaviour
 
 
     //**플레이어 전투 관련**//
-    bool m_isBattle = false; //전투중일 시 true
-    public bool IsBattle { get { return m_isBattle; } }
+    bool m_isFieldBattle = false; //전투중일 시 true
+    public bool IsFieldBattle { get { return m_isFieldBattle; } }
     bool m_isPlayerAttack = false; //true시 플레이어가 attack 애니메이션을 play하고 animation 클립 이벤트에서 공격관련 함수 호출
     public bool IsPlayerAttack { get { return m_isPlayerAttack; } } 
-    GameObject m_objCurrentMob = null; //현재 player와 대치중인 field monster
-    GameObject CurrentMob { set { m_objCurrentMob = value; } } //Player Control에서 raycast로 쏘아 맞은 몬스터를 넣어준다.
+    public float AttackSpeed { get { return m_fAttackSpeed; } }
+    GameObject m_objCurrentMob = null; //현재 player와 대치중인 monster
+    public GameObject CurrentMob { get { return m_objCurrentMob; } }
 
 
     //**필드 몬스터 관련**//
-    bool m_isFieldMob = false; //현재 필드몬스터가 있을 시 true
-    //public bool IsFieldMob { get { return m_isFieldMob; } }
-    GameObject m_objCurrentFieldMob = null;
     const float m_fBasicFieldMobHp = 50; //기본 필드몹 hp -> 여기서 랜덤으로 0~20% 증가하여 사용
     const float m_fBasicFieldBossHp = 100; //기본 필드보스 hp
     const float m_fFieldMobHpInc = 1.2f; //Hp 증가율 스테이지 증가 할 때마다 BasicHp에 곱하여 제공
@@ -80,20 +78,13 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        m_isMove=true;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButton(0))
-        {
-            m_isMove = true;
-        }
-        else
-        {
-            m_isMove = false;
-        }
+        
     }
 
 
@@ -109,6 +100,47 @@ public class GameManager : MonoBehaviour
             Debug.LogError(obj.name.ToString()+"를 GameManager에서 필요로 하지 않습니다.");
         }
     }
+
+
+    //***Player 관련 메소드***//
+
+    //Player의 raycast에서 필드몬스터 검출시 전투준비
+    public void SetFieldBattle(GameObject objEnemy)
+    {
+        m_isMove = false; // 더이상 움직이지 않도록 설정
+        m_isPlayerAttack = true; //플레이어가 공격하도록 설정
+        m_isFieldBattle = true;
+        m_objCurrentMob = objEnemy;
+    }
+    // 필드 몬스터와의 전투 (사실상 Field 몬스터는 공격을 안하므로 플레이어가 Attack하는 것)
+    public void FieldBattle()
+    {
+        if(m_objCurrentMob != null)
+        {
+            //현재 플레이어와 대치중인 Field Monster이 살아있는지 확인
+            bool isMobAlive = m_objCurrentMob.GetComponent<FieldMobControl>().GetIsAlive();
+
+            if (isMobAlive)
+            {
+                //대치중인 몬스터에게 플레이어의 공격력과 공속을 넘겨줘 데미지를 준다.
+                m_objCurrentMob.GetComponent<FieldMobControl>().SetDamege(m_fAttackDamage, m_fAttackSpeed);
+            }
+            else
+            {
+                //Field몹이 죽었으면
+                m_isPlayerAttack = false; //플레이어의 공격을 멈춘다.
+                m_objCurrentMob = null;
+                //추후 
+            }
+        }
+        else
+        {
+            Debug.LogError("GameManager의 m_objCurrentMob이 없습니다.");
+        }
+    }
+
+    //***Field Monster관련 메소드***//
+
 
     //Monster Hp 세팅(FieldMob)
     public float SetEnemyHp(GameObject objEnemy)
