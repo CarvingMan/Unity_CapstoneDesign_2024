@@ -13,8 +13,8 @@ public class GameManager : MonoBehaviour
 
     //***스테이지 관련***//
     int m_nStage = 1; //현재 Stage
-    const int m_nMaxFieldMob = 8; //Stage 당 몬스터 수
-    int m_nCurrentMobNo = 1; //현재 대치중인 field mob 번호 -> 8마리를 잡을 시 Stage++;
+    const int m_nMaxFieldMob = 7; //Stage 당 몬스터 수
+    int m_nCurrentMobNo = 0; //현재 대치중인 field mob 번호 -> 8마리를 잡을 시 Stage++;
     public int CurrentMonNo { get { return m_nCurrentMobNo; } }
 
 
@@ -102,6 +102,27 @@ public class GameManager : MonoBehaviour
     }
 
 
+    //***Field Stage 정비관련 메소드**//
+    
+    //다음 필드스테이지 재정비
+    void SetNextFieldStage()
+    {
+        if(m_nCurrentMobNo == m_nMaxFieldMob) //만약 최근에 전투한 FiledMob이 마지막(필드보스)라면
+        {
+            m_nCurrentMobNo = 0; //Mob번호 초기화
+            m_nStage++; //스테이지 증가
+        }
+        else
+        {
+            m_nCurrentMobNo++; //Mob번호 증가
+        }
+
+        //FieldMob 생성
+        Debug.Log("Mob생성");
+        m_isMove = true; //다시 움직이도록 설정
+    }
+
+
     //***Player 관련 메소드***//
 
     //Player의 raycast에서 필드몬스터 검출시 전투준비
@@ -120,7 +141,7 @@ public class GameManager : MonoBehaviour
             //현재 플레이어와 대치중인 Field Monster이 살아있는지 확인
             bool isMobAlive = m_objCurrentMob.GetComponent<FieldMobControl>().GetIsAlive();
 
-            if (isMobAlive)
+            if (isMobAlive && m_isFieldBattle)
             {
                 //대치중인 몬스터에게 플레이어의 공격력과 공속을 넘겨줘 데미지를 준다.
                 m_objCurrentMob.GetComponent<FieldMobControl>().SetDamege(m_fAttackDamage, m_fAttackSpeed);
@@ -130,7 +151,10 @@ public class GameManager : MonoBehaviour
                 //Field몹이 죽었으면
                 m_isPlayerAttack = false; //플레이어의 공격을 멈춘다.
                 m_objCurrentMob = null;
-                //추후 
+                m_isFieldBattle=false; //전투종료
+                //추후 FieldMobControl.cs에서 GameManager의 FieldMobDie()함수를 호출하면
+                //GameManager의 SetNextField()를 호출하여 재정비 한다.
+                
             }
         }
         else
@@ -140,7 +164,21 @@ public class GameManager : MonoBehaviour
     }
 
     //***Field Monster관련 메소드***//
+    
+    //Field 몬스터가 사망시 Reward와 다음 Field재정비
+    public void FieldMobDie()
+    {
+        //사실 FieldBattle()에서 전부 false처리 하지만 혹시모를 상황에 다시 초기화
+        if(m_isFieldBattle && m_isPlayerAttack)
+        {
+            m_isFieldBattle = false;
+            m_isPlayerAttack = false;
 
+            //다음 필드스테이지 재정비
+            SetNextFieldStage();
+        }
+        
+    }
 
     //Monster Hp 세팅(FieldMob)
     public float SetEnemyHp(GameObject objEnemy)

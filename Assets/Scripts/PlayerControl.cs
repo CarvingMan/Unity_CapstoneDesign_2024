@@ -82,6 +82,7 @@ public class PlayerControl : MonoBehaviour
     }
 
 
+    //Player의 player_attack이 재생될때 칼질하는 순간 에니메이션 이벤트로 호출 
     void Attack()
     {
         //현재 전투가 FieldBattle인 경우

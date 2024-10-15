@@ -12,7 +12,9 @@ public class FieldMobControl : MonoBehaviour
     float m_fMaxHp = 0f;
     float m_fCurrentHp = 0f;
 
-    bool m_isAlive = true;
+    bool m_isAlive = true; //false일 시 GameManager에서 GetDamage함수를 호출하지 않는다.
+
+    bool m_isCorDie = false; //CorDie() 코루틴 중복방지
 
 
 
@@ -58,14 +60,58 @@ public class FieldMobControl : MonoBehaviour
             if(m_fCurrentHp <= 0)
             {
                 m_isAlive = false;
+                if(m_isCorDie == false)
+                {
+                    StartCoroutine(CorDie());
+                }
             }
         }
         else
         {
             Debug.LogError("m_MobAnimator가 없습니다.");
         }
+    }
 
+    IEnumerator CorDie()
+    {
+        if(m_isCorDie == false)
+        {
+            m_isCorDie = true;
+        }
 
+        //현재 애니메이터 0레이어(Base Layer)의 의 애니메이션이 take_a_hit인지 확인
+        //공격받는 모션이 끝나고 death 클립을 재생하기 위함
+        while (m_MobAnimator.GetCurrentAnimatorStateInfo(0).IsName("take_a_hit"))
+        {
+            //ture일 시 아직 take_a_hit이 재생중이므로 잠시 기다린다.
+            yield return new WaitForEndOfFrame();
+        }
+        // take_a_hit 이 재생완료된 후 death 클립 재생
+        if(m_MobAnimator != null)
+        {
+            m_MobAnimator.Play("death");
+            //death 애니메이션 클립을 재생하였으니, 레이어 0의 GetCurrentAnimatorState는
+            //death 애니메이션이 재생중이다. 따라서 normalizedTime(0:시작~1:종료)가 1 보다 작을 때에는
+            //아직 해당 클립이 재생중이므로 잠시 yeild return 해 준다. 
+            //물론 위에서 사용한 것 처럼 IsName()으로 사용해도 정상작동한다.(특정 시간이 중요한게 아니면 사실 더 확실한 방법인듯 하다.)
+            while (m_MobAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1) 
+            {
+                //Debug.Log(m_MobAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime.ToString());
+                yield return new WaitForEndOfFrame();
+            }
+            //Debug.Log("완전히 사망");
 
+        }
+        else
+        {
+            Debug.LogError("m_MobAnimator가 없습니다.");
+            yield break;
+        }
+        //모든 로직이 끝났을 시
+        m_isCorDie = false;
+        GameManager.Instance.FieldMobDie(); //GameManager에 사망을 알리고
+        Destroy(gameObject);
+        //Debug.Log("삭제");
+        yield break;
     }
 }
