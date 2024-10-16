@@ -6,7 +6,7 @@ using UnityEngine;
 public class PlayerControl : MonoBehaviour
 {
     //**애니메이션 관련**//
-    Animator m_PlayerAnimator = null;
+    Animator m_playerAnimator = null;
 
    
 
@@ -14,7 +14,7 @@ public class PlayerControl : MonoBehaviour
     void Start()
     {
         GameManager.Instance.TakeObject(this.gameObject); //GameManager에 자신을 넘겨준다.
-        m_PlayerAnimator = GetComponent<Animator>();
+        m_playerAnimator = GetComponent<Animator>();
     }
 
     // Update is called once per frame
@@ -33,7 +33,7 @@ public class PlayerControl : MonoBehaviour
             RaycastHit2D hitEnemy;
             //Monster 레이어만 검사할 수 있도록 레이어마스크 설정
             int nLayerMask = 1 << LayerMask.NameToLayer("Monster");
-            float fDistance = 1;
+            float fDistance = 1f;
             //Player의 위치에서 오른쪽으로 1만큼 Monster레이어를 가진 콜라이더만 검사
             hitEnemy = Physics2D.Raycast(transform.position, Vector2.right, fDistance, nLayerMask);
             //Debug.DrawRay(transform.position, Vector2.right *1, Color.red);
@@ -58,26 +58,26 @@ public class PlayerControl : MonoBehaviour
         {
             //player_run 애니메이션을 재생하기 전에
             //애니메이션 재생속도 파라미터로 지정해 놓은 fMoveSpeed를 GameManager의 m_fMoveStatus에 맞게 설정 
-            if(m_PlayerAnimator.GetFloat("fMoveSpeed")!= GameManager.Instance.MoveStatus)
+            if(m_playerAnimator.GetFloat("fMoveSpeed")!= GameManager.Instance.MoveStatus)
             {
-                m_PlayerAnimator.SetFloat("fMoveSpeed", GameManager.Instance.MoveStatus);
+                m_playerAnimator.SetFloat("fMoveSpeed", GameManager.Instance.MoveStatus);
             }
          
-            m_PlayerAnimator.SetBool("isRun", true);
+            m_playerAnimator.SetBool("isRun", true);
         }
         else
         {
-            m_PlayerAnimator.SetBool("isRun", false);
+            m_playerAnimator.SetBool("isRun", false);
         }
 
         //GameManager에서 
         if (GameManager.Instance.IsPlayerAttack)
         {
             //player_attack애니메이션 속도를 GameManager의 m_fAttackSpeed에 맞게 파라미터 설정
-            m_PlayerAnimator.SetFloat("fAttackSpeed",GameManager.Instance.AttackSpeed);
+            m_playerAnimator.SetFloat("fAttackSpeed",GameManager.Instance.AttackSpeed);
             //player_attack 애니메이션 재생시 클립에서 칼질하는 순간
             //애니메이션 이벤트로 플레이어의 Attack()함수가 호출된다.
-            m_PlayerAnimator.Play("player_attack");
+            m_playerAnimator.Play("player_attack");
         }
     }
 

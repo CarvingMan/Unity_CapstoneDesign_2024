@@ -1,17 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
-public class GameManager : MonoBehaviour
+public class GameManager : Singleton<GameManager>
 {
     //싱글톤 디자인 패턴 사용
-    //정적 인스턴스 생성
-    // 보안을 위해 set 프로퍼티는 private로 설정하여 
-    // 다른 클래스에서 get은 가능하나 인스턴스 초기화는 오직 GameManager에서만 가능하다.
-    public static GameManager Instance { get; private set; }
+    //제너릭 클래스 Singleton을 상속받아 GameManager 싱글톤 인스턴스 생성
 
 
-    //***스테이지 관련***//
+    //***스테이지(Field) 관련***//
+    bool m_isInField = false; //현재 Field에 있는지(플레이어가 Field Stage에 있는지)
     int m_nStage = 1; //현재 Stage
     const int m_nMaxFieldMob = 7; //Stage 당 몬스터 수
     int m_nCurrentMobNo = 0; //현재 대치중인 field mob 번호 -> 8마리를 잡을 시 Stage++;
@@ -58,33 +57,47 @@ public class GameManager : MonoBehaviour
     //***GameManager에게 넘겨받을 인스턴스들***//
     //각각의 Start()에서 넘겨준다.
     GameObject m_objPlayer = null;
+    GameObject m_objGrounds = null;
 
-    private void Awake()
+    //*** 직접 객체생성***//
+    Generator m_csGenerator = new Generator();
+
+
+    //***Scene***//관련
+    Scene m_currentScene; //현재 씬
+
+
+    // 부모 Singleton의 Awake()가 존재하기에 해당 Awake()를 무시하지 않고 GameManager의 Awake()를 
+    // 정의 하려면 오버라이드 한 후 base.Awake() 즉, 부모 Awake()를 호출해야한다. 
+    public override void Awake()
     {
-        if(Instance != null)
-        {
-            //새롭게 GameManager가 생성되었을 때 정적 instance가 존재한다면 
-            //GameManager가 중복이기에 제거
-            Destroy(gameObject);
-        }
-        else
-        {
-            //만약 정적 instance가 null이라면, 해당 객체를 넘겨주고 DontDestroy
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
+        base.Awake();
+
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        m_isMove=true;
+        //new로 생성한 객체들
+        //MonoBehavior를 상속받지 않았기에 해당 스크립트의Init()을 해 주어야 한다.
+        m_csGenerator.Init();
+
+        m_isInField = false;
+
+        m_currentScene = SceneManager.GetActiveScene();
     }
+ 
 
     // Update is called once per frame
     void Update()
     {
-        
+        //만약 GameScene에 처음 들어오고 FieldStage에 있을 때 
+        //Field 몬스터를 설정 해 주어야 한다.
+        if(m_currentScene.name == "GameScene" && m_isInField == false)
+        {
+            m_isInField = true; //나중에 씬을 나갈때 false로 설정
+            SetFieldStage(false); //처음 혹은 다시 씬에 들어왔을 때 이므로 매개변수는 false로 하여 m_nCurrentMobNo는 그대로 유지
+        }
     }
 
 
@@ -95,6 +108,11 @@ public class GameManager : MonoBehaviour
         {
             m_objPlayer = obj;
         }
+        else if (obj.CompareTag("TileMap"))
+        {
+            m_objGrounds = obj;
+            
+        }
         else
         {
             Debug.LogError(obj.name.ToString()+"를 GameManager에서 필요로 하지 않습니다.");
@@ -103,23 +121,49 @@ public class GameManager : MonoBehaviour
 
 
     //***Field Stage 정비관련 메소드**//
-    
+
     //다음 필드스테이지 재정비
-    void SetNextFieldStage()
+    void SetFieldStage(bool isNext)
     {
-        if(m_nCurrentMobNo == m_nMaxFieldMob) //만약 최근에 전투한 FiledMob이 마지막(필드보스)라면
+        //만약 다음 FieldStage라면 속성들을 증가 시켜줘야 한다.
+        if (isNext)
         {
-            m_nCurrentMobNo = 0; //Mob번호 초기화
-            m_nStage++; //스테이지 증가
-        }
-        else
-        {
-            m_nCurrentMobNo++; //Mob번호 증가
+            if (m_nCurrentMobNo == m_nMaxFieldMob) //만약 최근에 전투한 FiledMob이 마지막(필드보스)라면
+            {
+                m_nCurrentMobNo = 0; //Mob번호 초기화
+                m_nStage++; //스테이지 증가
+            }
+            else
+            {
+                m_nCurrentMobNo++; //Mob번호 증가
+            }
         }
 
         //FieldMob 생성
-        Debug.Log("Mob생성");
-        m_isMove = true; //다시 움직이도록 설정
+        if (m_objGrounds != null && m_objPlayer != null)
+        {
+            Transform trMobParent = m_objGrounds.GetComponent<MoveMap>().GetFieldMobGround();
+            if (trMobParent != null)
+            {
+                bool isFieldBoss = false;
+                if(m_nCurrentMobNo == m_nMaxFieldMob)
+                {
+                    isFieldBoss = true;
+                }
+                //Generate.cs를 통해 Field Mob 생성
+                m_csGenerator.GenerateFieldMob(isFieldBoss, trMobParent, m_objPlayer.transform.position.y);
+            }
+            else
+            {
+                Debug.LogError("MoveMap으로 부터 trMobParent를 넘겨받지 못합니다.");
+            }
+        }
+        else
+        {
+            Debug.LogError("m_objGrounds 혹은 m_objPlayer가 null인지 확인 하세요");
+        }
+        Debug.Log(string.Format("스테이지 : {0}, 번호 : {1}", m_nStage, m_nCurrentMobNo));
+        m_isMove = true;
     }
 
 
@@ -174,10 +218,10 @@ public class GameManager : MonoBehaviour
             m_isFieldBattle = false;
             m_isPlayerAttack = false;
 
-            //다음 필드스테이지 재정비
-            SetNextFieldStage();
+            
         }
-        
+        //다음 필드스테이지 재정비
+        SetFieldStage(true);
     }
 
     //Monster Hp 세팅(FieldMob)

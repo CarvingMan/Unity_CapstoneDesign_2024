@@ -29,7 +29,8 @@ public class MoveMap : MonoBehaviour
     //Ground 타일맵 일 시 멤버 변수
     GameObject[] m_objTileGrounds = null; // 타일맵들을 정렬하여 저장할 배열
     GameObject m_objPreviousGround = null; // 이미 지나간 타일맵
-    const float m_fInterval = 6f; //Map끼리의 간격
+    [SerializeField]
+    float m_fInterval = 8f; //Map끼리의 간격
 
     private void Awake()
     {
@@ -52,7 +53,11 @@ public class MoveMap : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        //GroundType일 시 GameMager에 인스턴스를 넘겨준다.
+        if(m_eMoveType == E_Move_Type.Ground)
+        {
+            GameManager.Instance.TakeObject(gameObject);
+        }
     }
 
     // Update is called once per frame
@@ -198,7 +203,7 @@ public class MoveMap : MonoBehaviour
         //카메라와 x축 간의 거리가 (간격)6 보다 커졌다는 것은 이미 뒤로 지나가 화면을 넘어섯다는 것이다.
         //따라서 배열을 앞당겨주고 지나간 요소는 마지막 전 요소에 m_fInterver만큼 더한 위치로 바꾸어준다.
         float fFrontTileDistance = m_objTileGrounds[0].transform.position.x;
-        if(Mathf.Abs(Camera.main.transform.position.x - fFrontTileDistance) > m_fInterval+0.1f)
+        if(Mathf.Abs(Camera.main.transform.position.x - fFrontTileDistance) > m_fInterval)
         {
             //m_objPreviousGround에 화면 밖으로 넘어간 m_objTileGrounds의 첫번 째 요소를 넣어준다.
             m_objPreviousGround = m_objTileGrounds[0];
@@ -220,5 +225,35 @@ public class MoveMap : MonoBehaviour
                 }
             }
         }
+    }
+
+    //만약 타입이 Ground일 시 필드 몬스터가 자식으로 들어갈 여분 TileMap제공
+    public Transform GetFieldMobGround()
+    {
+        if (m_eMoveType == E_Move_Type.Ground)
+        {
+            //타일맵 요소가 존재한다면
+            if(m_objTileGrounds.Length != 0)
+            {
+                //전체에서 2로 나누어 인덱스로 사용
+                //int 나눗셈이기에 요소가 1개일 시0, 2개 일 시 1, 3개 일 시1...
+                //(사실상 타일 반복은 2개이상으로 설정하여야 반복이 되기에 인덱스 1부터 시작)
+                //이 처럼 배열의 중간 혹은  마지막에 타일 요소 선택
+                int nIndex = m_objTileGrounds.Length / 2;
+     
+                //해당 타일의 transform 반환, 추후 몬스터 생성 시 부모transform으로 설정되어
+                //같이 플레이어쪽으로 맵 이동하게 된다.
+                return m_objTileGrounds[nIndex].transform;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        else
+        {
+            return null;
+        }
+        
     }
 }
