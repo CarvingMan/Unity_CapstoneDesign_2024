@@ -23,6 +23,7 @@ public class FieldMobControl : MonoBehaviour
     void Start()
     {
         m_fMaxHp = GameManager.Instance.SetEnemyHp(this.gameObject); //체력 설정
+        Debug.Log("몬스터 체력 : " + m_fMaxHp.ToString("F2"));
         m_fCurrentHp = m_fMaxHp;
         if (m_mobAnimator == null)
         {

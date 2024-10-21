@@ -238,7 +238,7 @@ public class GameManager : Singleton<GameManager>
                 else //stage가 2이상일 때
                 {
                     //현재 stage-1 에 증가율을 곱한 값을 기본 체력에 곱하여 체력을 늘린다.
-                    // -> stage가 증가할 수록 몬스터의 hp가 증가한다.
+                    // -> stage가 증가할 수록 몬스터의 hp가 자동으로 증가한다.
                     float fIncrease = (m_nStage - 1) * m_fFieldMobHpInc;
                     float fHp = m_fBasicFieldBossHp * fIncrease;
                     return fHp;
