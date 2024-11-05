@@ -17,6 +17,14 @@ public class GameManager : Singleton<GameManager>
     public int CurrentMonNo { get { return m_nCurrentMobNo; } }
 
 
+    //***돈 관련***//
+    long m_nCurrentMoney = 0;
+    public long CurrentMoney { get { return m_nCurrentMoney; } }
+    float m_fGetCoinTime = 0.8f; //동전이 생성되고 CoinUI까지 가는 시간
+    public float GetCoinTime { get { return m_fGetCoinTime; } }
+    const int m_nCoinPrice = 10; //동전 하나당 값 -> m_fMoneyInc를 곱하여 제공
+    const float m_fMoneyInc = 1.8f; //Stage별로 Coin당 값 증가량
+
     //*** 능력치 레벨 ***//
     //float m_fMoveLv = 0;
     //float m_fAttackSpeedLv = 0;
@@ -58,6 +66,7 @@ public class GameManager : Singleton<GameManager>
     //각각의 Start()에서 넘겨준다.
     GameObject m_objPlayer = null;
     GameObject m_objGrounds = null;
+    GameObject m_objFieldUI = null;
 
     //*** 직접 객체생성***//
     Generator m_csGenerator = new Generator();
@@ -113,9 +122,44 @@ public class GameManager : Singleton<GameManager>
             m_objGrounds = obj;
             
         }
+        else if (obj.CompareTag("FieldUI"))
+        {
+            m_objFieldUI = obj;
+        }
         else
         {
             Debug.LogError(obj.name.ToString()+"를 GameManager에서 필요로 하지 않습니다.");
+        }
+    }
+
+
+    //***Money관련 메소드***//
+
+    //돈 증가(리워드)
+    void EarnMoney(int nCoin)
+    {
+        if(m_nStage <= 1)
+        {
+            //스테이지가 1일 경우에는 CoinPrice에 Coin 수만큼 곱하여 기존 값에 더해준다.
+            m_nCurrentMoney += nCoin * m_nCoinPrice;
+        }
+        else
+        {
+            //스테이지가 2 이상일 경우 현재 스테이지-1에서 m_fMoneyInc를 곱한 값을 m_nCoinPrice에 곱해준다.
+            //FieldMob 체력증가와 같은 방식, Stage가 오를 수록 자동으로 보상도 커진다.
+            float fPrice = ((m_nStage - 1) *m_fMoneyInc) * m_nCoinPrice;
+            //m_nCurrentMoney 가 long type이므로 fPrice를 반올림한Int로 바꾸어 nCoin 수 만큼 곱해준다.
+            m_nCurrentMoney += nCoin * Mathf.RoundToInt(fPrice);
+        }
+
+        if (m_objFieldUI != null) 
+        {
+            //FieldUI의 moneyText를 현재 값으로 변경해준다.(Tween 변환)
+            m_objFieldUI.GetComponent<FieldUI>().SetMoneyText(m_fGetCoinTime, m_nCurrentMoney);   
+        }
+        else
+        {
+            Debug.LogError("m_objFieldUI가 없습니다.");
         }
     }
 
@@ -194,7 +238,6 @@ public class GameManager : Singleton<GameManager>
             {
                 //Field몹이 죽었으면
                 m_isPlayerAttack = false; //플레이어의 공격을 멈춘다.
-                m_objCurrentMob = null;
                 m_isFieldBattle=false; //전투종료
                 //추후 FieldMobControl.cs에서 GameManager의 FieldMobDie()함수를 호출하면
                 //GameManager의 SetNextField()를 호출하여 재정비 한다.
@@ -217,11 +260,49 @@ public class GameManager : Singleton<GameManager>
         {
             m_isFieldBattle = false;
             m_isPlayerAttack = false;
-
-            
         }
+
+        //Coin 보상
+        int nCoin = 0;// 보상할 코인 수
+        //필드보스인지 아닌지에 따라 다르게 보상한다.ㄴ
+        if(m_nCurrentMobNo == m_nMaxFieldMob)
+        {
+            nCoin = Random.Range(7, 11);
+        }
+        else
+        {
+            nCoin = Random.Range(3, 6);
+        }
+
+        //FieldUI의 coinUI RectTransform이 필요하므로 검사
+        if (m_objFieldUI != null)
+        {
+            RectTransform recTarget = m_objFieldUI.GetComponent<FieldUI>().GetCoinUIRect();
+            if (m_objCurrentMob != null) 
+            {
+                //현재 죽은 FieldMob의 위치에 nCoin만큼 코인을 생성하여 recTarget으로 이동시킨다.
+                m_csGenerator.GenerateCoin(m_objCurrentMob.transform.position,recTarget,nCoin);
+            }
+            else
+            {
+                Debug.LogError("m_objCurrentMob이 null이 되었습니다. 확인하세요");
+            }
+        }
+        else
+        {
+            Debug.LogError("m_objFieldUI 가 없습니다.");
+        }
+
+        //nCoin만큼 m_nCrrentMoney를 증가 시켜준다.
+        EarnMoney(nCoin);
+        m_objCurrentMob = null; //초기화
+
+
+
         //다음 필드스테이지 재정비
-        SetFieldStage(true);
+        // 여기서 중요한 점은 위에 Coin Generate와 EarnMoney에서 m_nCurrentMobNo 또는 m_nStage가 필요하므로
+        //SetFieldStage를 마지막에 호출하여 필요한 로직이후 m_nCurrentMobNo 또는 m_nStage를 증가시켜줘야 한다.
+        SetFieldStage(true); 
     }
 
     //Monster Hp 세팅(FieldMob)

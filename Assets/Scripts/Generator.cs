@@ -8,8 +8,11 @@ public class Generator
      * Generate관련
      */
 
-    GameObject[] m_objFieldMobPrefabs = null;
-    GameObject m_objFieldBossPrefab = null;
+    // 프리팹
+    GameObject[] m_objFieldMobPrefabs = null; //필드몬스터 프리팹 배열
+    GameObject m_objFieldBossPrefab = null; // 필드보스 프리팹 오브젝트
+
+    GameObject m_objCoinPrefab = null; //Coin 프리팹
 
 
     //초기화 함수
@@ -20,10 +23,16 @@ public class Generator
         {
             m_objFieldMobPrefabs = Resources.LoadAll<GameObject>("Prefab/FieldMob");
         }
+
         if(m_objFieldBossPrefab == null)
         {
             m_objFieldBossPrefab = Resources.Load<GameObject>("Prefab/FieldBoss/FieldBoss");
 
+        }
+
+        if(m_objCoinPrefab == null)
+        {
+            m_objCoinPrefab = Resources.Load<GameObject>("Prefab/Coin/Coin");
         }
     }
 
@@ -61,5 +70,19 @@ public class Generator
             objFieldMob.transform.position= vecNewPos;
         }
 
+    }
+
+    //매개변수로 넘겨준 nCoin의 수만큼 vecGenPos에 coin프리팹 생성 수 해당 coin을 recTarget으로 Tween이동
+    public void GenerateCoin(Vector2 vecGenPos, RectTransform recTarget, int nCoin)
+    {
+        
+        for (int i=1; i<=nCoin; i++)
+        {
+            //프리팹 인스턴스화
+            GameObject objCoin = Object.Instantiate(m_objCoinPrefab, vecGenPos, Quaternion.identity);
+            //생성된 Coin의 CoinMove(Transform recTarget)을 통하여 Dotween 시퀀스 생성
+            //recTarget.position은 CoinMove()에서 world Position으로 변환하여 이동힌다.
+            objCoin.GetComponent<CoinTween>().CoinMove(recTarget);
+        }
     }
 }

@@ -30,11 +30,6 @@ public class FieldMobControl : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 
     public bool GetIsAlive()
     {
