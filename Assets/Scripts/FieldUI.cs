@@ -57,12 +57,12 @@ public class FieldUI : MonoBehaviour
             { 
                 fMoney = fMoney / 1000;
 
-                if (fMoney >= 100000) //현재 돈이 Billion(10억)이상인경우
+                if (fMoney >= 1000000) //현재 돈이 Billion(10억)이상인경우
                 {
                     fMoney = fMoney / 1000000;
                     strMoney = fMoney.ToString("F1") + "B";
                 }
-                else if(fMoney >= 10) //현재 돈이 Million(100만) 이상인 경우
+                else if(fMoney >= 1000) //현재 돈이 Million(100만) 이상인 경우
                 {
                     fMoney = fMoney / 1000;
                     strMoney = fMoney.ToString("F1") + "M";

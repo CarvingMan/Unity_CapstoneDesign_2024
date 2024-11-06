@@ -8,7 +8,6 @@ public class GameManager : Singleton<GameManager>
     //싱글톤 디자인 패턴 사용
     //제너릭 클래스 Singleton을 상속받아 GameManager 싱글톤 인스턴스 생성
 
-
     //***스테이지(Field) 관련***//
     bool m_isInField = false; //현재 Field에 있는지(플레이어가 Field Stage에 있는지)
     int m_nStage = 1; //현재 Stage
@@ -34,8 +33,9 @@ public class GameManager : Singleton<GameManager>
     //*** 능력치 값 ***//
     private float m_fMoveStatus = 1; //이동속도 능력치 1이면 100%, 레벨업시 증가
     private float m_fAttackSpeed = 1; //공격속도 위와 동일
-    private float m_fAttackDamage = 10; //레벨업시 10% 씩 증가 
-
+    private float m_fAttackDamage = 10; //레벨업시 현재 데미지의 10% 씩 증가 
+    private float m_fCriticalProb = 0; //치명타 확률 레벨업 시 0.01씩 증가 최대1
+    private float m_fCriticalRatio = 1; //치명타 데미지 배수 -> 치명타가 나올 시 m_fAttackDamage에 곱하여 사용 레벨업 시 0.01f증가
 
     //**플레이어 전투 관련**//
     bool m_isFieldBattle = false; //전투중일 시 true
@@ -194,8 +194,16 @@ public class GameManager : Singleton<GameManager>
                 {
                     isFieldBoss = true;
                 }
+
                 //Generate.cs를 통해 Field Mob 생성
-                m_csGenerator.GenerateFieldMob(isFieldBoss, trMobParent, m_objPlayer.transform.position.y);
+                if (m_csGenerator != null)
+                {
+                    m_csGenerator.GenerateFieldMob(isFieldBoss, trMobParent, m_objPlayer.transform.position.y);
+                }
+                else
+                {
+                    Debug.LogError("m_csGenerator가 없습니다.");
+                }
             }
             else
             {
@@ -212,6 +220,23 @@ public class GameManager : Singleton<GameManager>
 
 
     //***Player 관련 메소드***//
+
+    //플레이어가 공격했을시 치명타 확률에 따라 bool형태로 반환
+    bool IsCritical()
+    {
+        
+        float fCriticalProb = m_fCriticalProb * 100;
+        //1~100 정수중 랜덤 값이 m_fCriticalProb에 100을 곱한 값 보다 낮으면 치명타 성공, 클 시 실패
+        //따라서 치명타 확률이 0이라면, 무조건 false이다.
+        if (Random.Range(1,101) <= fCriticalProb)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 
     //Player의 raycast에서 필드몬스터 검출시 전투준비
     public void SetFieldBattle(GameObject objEnemy)
@@ -231,8 +256,55 @@ public class GameManager : Singleton<GameManager>
 
             if (isMobAlive && m_isFieldBattle)
             {
+                float fAttackDamage = 0;
+                //치명타 여부 확인
+                bool isCritical = IsCritical();
+                if (isCritical)
+                {
+                    //치명타에 걸렸을 시 m_fAttackDamage에 치명타 배수(m_fCriticalRatio)를 곱해준다.
+                    fAttackDamage = m_fAttackDamage * m_fCriticalRatio;
+                }
+                else
+                {
+                    fAttackDamage = m_fAttackDamage;
+                }
+
                 //대치중인 몬스터에게 플레이어의 공격력과 공속을 넘겨줘 데미지를 준다.
-                m_objCurrentMob.GetComponent<FieldMobControl>().SetDamege(m_fAttackDamage, m_fAttackSpeed);
+                m_objCurrentMob.GetComponent<FieldMobControl>().SetDamege(fAttackDamage, m_fAttackSpeed);
+                
+                //DamageText프리팹(Tweening) 생성
+                if(m_csGenerator != null)
+                {
+                    Vector2 vecMobHead = Vector2.zero;
+                    if(m_objCurrentMob != null && m_objFieldUI)
+                    {
+                        vecMobHead = m_objCurrentMob.GetComponent<FieldMobControl>().GetHeadPos();
+                        Canvas canvas = null;
+                        
+                        //DamageText프리팹의 부모로 들어갈 main canvas가 필요하다. 다만 성능 문제로 Find함수는 지양하기위해
+                        //DamageText는 GameScene에서 생성되므로 m_objFieldUI(cavas자식 panel)가 존재하므로 GetComponetInParent로 cavas를 가져온다.
+                        if(m_objFieldUI != null)
+                        {
+                            canvas = m_objFieldUI.GetComponentInParent<Canvas>();
+                            //Generator.cs 의 GenerateDamageText()를 통해 Tweening하는 DamageText 프리팹 생성
+                            m_csGenerator.GenerateDamageText(canvas,vecMobHead, fAttackDamage, m_fAttackSpeed, isCritical);
+                        }
+                        else
+                        {
+                            Debug.LogError("m_objFieldUI가 없습니다.");
+                        }
+
+                    }
+                    else
+                    {
+                        Debug.LogError("m_objCurrentMob이 없습니다.");
+                    }
+                }
+                else
+                {
+
+                }
+
             }
             else
             {

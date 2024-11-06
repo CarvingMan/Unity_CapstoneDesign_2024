@@ -16,7 +16,8 @@ public class FieldMobControl : MonoBehaviour
 
     bool m_isCorDie = false; //CorDie() 코루틴 중복방지
 
-
+    [SerializeField]
+    Transform m_trHead;
 
     // Start is called before the first frame update
     void Start()
@@ -110,5 +111,18 @@ public class FieldMobControl : MonoBehaviour
         Destroy(gameObject);
         //Debug.Log("삭제");
         yield break;
+    }
+
+    public Vector2 GetHeadPos()
+    {
+        if(m_trHead != null)
+        {
+            return m_trHead.position;
+        }
+        else
+        {
+            Debug.LogError(gameObject.name + "의 m_trHead가 없습니다.");
+            return Vector2.zero;
+        }
     }
 }

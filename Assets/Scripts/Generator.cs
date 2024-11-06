@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class Generator 
@@ -12,7 +13,9 @@ public class Generator
     GameObject[] m_objFieldMobPrefabs = null; //필드몬스터 프리팹 배열
     GameObject m_objFieldBossPrefab = null; // 필드보스 프리팹 오브젝트
 
-    GameObject m_objCoinPrefab = null; //Coin 프리팹
+    GameObject m_objCoinPrefab = null; //Coin 프리팹(Tweening)
+
+    TextMeshProUGUI m_TMPDamagePrefab = null; //DamageText 프리팹(Tweening)
 
 
     //초기화 함수
@@ -33,6 +36,11 @@ public class Generator
         if(m_objCoinPrefab == null)
         {
             m_objCoinPrefab = Resources.Load<GameObject>("Prefab/Coin/Coin");
+        }
+
+        if(m_TMPDamagePrefab == null)
+        {
+            m_TMPDamagePrefab = Resources.Load<TextMeshProUGUI>("Prefab/DamageText/DamageText");
         }
     }
 
@@ -84,5 +92,15 @@ public class Generator
             //recTarget.position은 CoinMove()에서 world Position으로 변환하여 이동힌다.
             objCoin.GetComponent<CoinTween>().CoinMove(recTarget);
         }
+    }
+
+    //Tweenig하는 DamageText 생성 함수
+    public void GenerateDamageText(Canvas canvas, Vector2 vecHead, float fDamage, float fAttackSpeed, bool isCritical)
+    {
+        //매개인자로 넘겨받은 캔버스의 자식으로 생성
+        TextMeshProUGUI damageText = Object.Instantiate(m_TMPDamagePrefab, canvas.transform);
+        //Tweening 시작
+        damageText.GetComponent<DamageText>().SetDamageText(vecHead,fDamage, fAttackSpeed, isCritical);
+        
     }
 }
