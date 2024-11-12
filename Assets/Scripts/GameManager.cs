@@ -186,6 +186,7 @@ public class GameManager : Singleton<GameManager>
         //FieldMob 생성
         if (m_objGrounds != null && m_objPlayer != null)
         {
+            //m_objGround에서 생성될 Field몹의 부모가 될 타일맵의 Tranform을 받아온다.
             Transform trMobParent = m_objGrounds.GetComponent<MoveMap>().GetFieldMobGround();
             if (trMobParent != null)
             {
@@ -198,7 +199,16 @@ public class GameManager : Singleton<GameManager>
                 //Generate.cs를 통해 Field Mob 생성
                 if (m_csGenerator != null)
                 {
-                    m_csGenerator.GenerateFieldMob(isFieldBoss, trMobParent, m_objPlayer.transform.position.y);
+                    if(m_objFieldUI != null)
+                    {
+                        //FieldMob을 생성할 때 EnemyHpBar프리팹도 동시에 생성해야 한다. 둘 다 GameScene에서 생성되므로 m_objFieldUI의 부모 Canvas를 넘겨준다.
+                        Canvas mainCanvas = m_objFieldUI.GetComponentInParent<Canvas>();
+                        m_csGenerator.GenerateFieldMob(isFieldBoss, trMobParent, m_objPlayer.transform.position.y,mainCanvas);
+                    }
+                    else 
+                    {
+                    
+                    }
                 }
                 else
                 {

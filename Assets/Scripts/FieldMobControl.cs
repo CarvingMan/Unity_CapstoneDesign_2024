@@ -18,10 +18,16 @@ public class FieldMobControl : MonoBehaviour
 
     [SerializeField]
     Transform m_trHead;
+    [SerializeField]
+    Transform m_trHpBarPos;
 
-    // Start is called before the first frame update
-    void Start()
+    //Generator에서 넘겨받을 HpBar Panel
+    GameObject m_objHpBar = null;
+
+
+    private void Awake()
     {
+        m_isAlive=true;
         m_fMaxHp = GameManager.Instance.SetEnemyHp(this.gameObject); //체력 설정
         Debug.Log("몬스터 체력 : " + m_fMaxHp.ToString("F2"));
         m_fCurrentHp = m_fMaxHp;
@@ -29,6 +35,48 @@ public class FieldMobControl : MonoBehaviour
         {
             m_mobAnimator = GetComponent<Animator>();
         }
+    }
+
+    private void Update()
+    {
+        if (m_objHpBar != null) 
+        {
+            //넘겨받은 EnemyHpBar프리팹이 m_trHpBarPos.position을 따라올 수 있도록
+            m_objHpBar.transform.position = Camera.main.WorldToScreenPoint(m_trHpBarPos.position);
+        }
+        else
+        {
+            Debug.LogError("m_objHpBar가 없습니다.");
+        }
+    }
+
+    //DamageText가 생성될 머리 위의 Position을 가져오는 함수
+    public Vector2 GetHeadPos()
+    {
+        if (m_trHead != null)
+        {
+            return m_trHead.position;
+        }
+        else
+        {
+            Debug.LogError(gameObject.name + "의 m_trHead가 없습니다.");
+            return Vector2.zero;
+        }
+    }
+
+    //Generator에서 넘겨받은 HpBar를 세팅
+    public void SetHpBar(GameObject HpBar)
+    {
+        m_objHpBar = HpBar;
+        if (m_trHpBarPos != null) 
+        {
+            m_objHpBar.transform.position = Camera.main.WorldToScreenPoint(m_trHpBarPos.position);
+        }
+        else
+        {
+            Debug.LogError("m_trHpPos가 없습니다.");
+        }
+        
     }
 
 
@@ -41,8 +89,16 @@ public class FieldMobControl : MonoBehaviour
     {
         m_fCurrentHp -= fDamage;
         Mathf.Clamp(m_fCurrentHp, 0f, m_fMaxHp); //m_fCurrentHp가 0 밑으로 떨어지지 않게 고정
-        
-        if(m_mobAnimator != null)
+
+        //HpBar 세팅
+        if (m_objHpBar != null)
+        {
+            float fHpRatio = m_fCurrentHp / m_fMaxHp;
+            //현재 남은 Hp비율을 넘겨준다.
+            m_objHpBar.GetComponent<EnemyHpBar>().SetHpBar(fHpRatio);
+        }
+
+        if(m_mobAnimator != null && m_isAlive)
         {
             // take_a_Hit 애니매이션의 speed를 설정 -> GameManager에서 Player의 공격속도를 전달
             // 해당함수는 Player의 attack애니메이션 이벤트에서 GameManager -> 해당메소드로 연결되기에 속도를 맞추기 위함
@@ -108,21 +164,11 @@ public class FieldMobControl : MonoBehaviour
         //모든 로직이 끝났을 시
         m_isCorDie = false;
         GameManager.Instance.FieldMobDie(); //GameManager에 사망을 알리고
+        Destroy(m_objHpBar);
         Destroy(gameObject);
         //Debug.Log("삭제");
         yield break;
     }
 
-    public Vector2 GetHeadPos()
-    {
-        if(m_trHead != null)
-        {
-            return m_trHead.position;
-        }
-        else
-        {
-            Debug.LogError(gameObject.name + "의 m_trHead가 없습니다.");
-            return Vector2.zero;
-        }
-    }
+
 }

@@ -17,6 +17,7 @@ public class Generator
 
     TextMeshProUGUI m_TMPDamagePrefab = null; //DamageText 프리팹(Tweening)
 
+    GameObject m_objEnemyHpBarPrefab = null; //EnemyHpBar panel UI프리팹
 
     //초기화 함수
     public void Init()
@@ -42,13 +43,19 @@ public class Generator
         {
             m_TMPDamagePrefab = Resources.Load<TextMeshProUGUI>("Prefab/DamageText/DamageText");
         }
+
+        if (m_objEnemyHpBarPrefab == null) 
+        {
+            m_objEnemyHpBarPrefab = Resources.Load<GameObject>("Prefab/UI/EnemyHpBar");
+        }
     }
 
 
 
     //Field 몹을 생성하는 함수, 매개변수 : 생성될 몹이 필드보스 확인 여부, 부모(TileMapGround)tranform,
     //Y축 worldposition(플레이어와 같은 위치로 했을 때 높이가 똑같도록 스프라이트 pivot을 설정해 두었다.) 
-    public void GenerateFieldMob(bool isFieldBoss, Transform trParent, float fMobWorldPosY)
+    //현제 메인 캔버스를 넘겨받아 Enemy HpBar프리팹을 같이 생성
+    public void GenerateFieldMob(bool isFieldBoss, Transform trParent, float fMobWorldPosY, Canvas canvas)
     {
         GameObject objFieldMob = null;
 
@@ -78,6 +85,10 @@ public class Generator
             objFieldMob.transform.position= vecNewPos;
         }
 
+        //HpBar프리팹 생성
+        GameObject objHpBar = Object.Instantiate(m_objEnemyHpBarPrefab,canvas.transform);
+        //FieldMob에게 생성된 HpBar를 넘겨준다.
+        objFieldMob.GetComponent<FieldMobControl>().SetHpBar(objHpBar);
     }
 
     //매개변수로 넘겨준 nCoin의 수만큼 vecGenPos에 coin프리팹 생성 수 해당 coin을 recTarget으로 Tween이동

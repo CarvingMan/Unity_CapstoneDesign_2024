@@ -9,7 +9,7 @@ public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
      * 해당 제너릭 클래스를 상속 받으면 손쉽게 싱글톤으로 사용가능 하다.
      * 만약 2개 이상의 서로다른 타입의 Singleton instance가 필요할때 가능한 방법
      */
-    public int a = 0;
+
     private static T instance;
     public static T Instance
     {
