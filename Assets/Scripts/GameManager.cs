@@ -11,6 +11,7 @@ public class GameManager : Singleton<GameManager>
     //***스테이지(Field) 관련***//
     bool m_isInField = false; //현재 Field에 있는지(플레이어가 Field Stage에 있는지)
     int m_nStage = 1; //현재 Stage
+    public int CurrentStage {  get { return m_nStage; } }
     const int m_nMaxFieldMob = 7; //Stage 당 몬스터 수
     int m_nCurrentMobNo = 0; //현재 대치중인 field mob 번호 -> 8마리를 잡을 시 Stage++;
     public int CurrentMonNo { get { return m_nCurrentMobNo; } }
@@ -33,7 +34,7 @@ public class GameManager : Singleton<GameManager>
     //*** 능력치 값 ***//
     private float m_fMoveStatus = 1; //이동속도 능력치 1이면 100%, 레벨업시 증가
     private float m_fAttackSpeed = 1; //공격속도 위와 동일
-    private float m_fAttackDamage = 10; //레벨업시 현재 데미지의 10% 씩 증가 
+    private float m_fAttackDamage = 10; //레벨업시 현재 데미지의 5% 씩 증가 
     private float m_fCriticalProb = 0; //치명타 확률 레벨업 시 0.01씩 증가 최대1
     private float m_fCriticalRatio = 1; //치명타 데미지 배수 -> 치명타가 나올 시 m_fAttackDamage에 곱하여 사용 레벨업 시 0.01f증가
 
@@ -176,6 +177,16 @@ public class GameManager : Singleton<GameManager>
             {
                 m_nCurrentMobNo = 0; //Mob번호 초기화
                 m_nStage++; //스테이지 증가
+
+                //StageText 세팅(Tweening)
+                if (m_objFieldUI != null)
+                {
+                    m_objFieldUI.GetComponent<FieldUI>().SetStageText(m_nStage);
+                }
+                else
+                {
+                    Debug.LogError("m_objFieldUI가 없습니다.");
+                }
             }
             else
             {

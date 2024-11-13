@@ -19,11 +19,37 @@ public class FieldUI : MonoBehaviour
     [SerializeField]
     TextMeshProUGUI m_textMoney = null;
 
+    [SerializeField]
+    TextMeshProUGUI m_textStage = null;
+
     // Start is called before the first frame update
     void Start()
     {
         GameManager.Instance.TakeObject(gameObject);
+        SetStageText(GameManager.Instance.CurrentStage);
         SetMoneyText(0, GameManager.Instance.CurrentMoney);
+    }
+
+
+    //Stage Text를 Tweening하여 표시
+    public void SetStageText(int nStage)
+    {
+        if(m_textStage != null)
+        {
+            string strText = "Stage" + nStage.ToString();
+            Tween FadeOut = m_textStage.DOFade(0, 0.5f);
+            Tween FadeIn = m_textStage.DOFade(1, 2f);
+            //DOTween 무료 버전은 textMeshPro를 지원하지 않지만 아래처럼, DOTween.To()를 통해 사용가능하다.
+            Tween tweenText = DOTween.To(() => "", (str) => m_textStage.text = str, strText, 0.5f);
+            Sequence sequence = DOTween.Sequence();
+            sequence.Prepend(FadeOut).SetEase(Ease.Linear);
+            sequence.Append(FadeIn).SetEase(Ease.Linear);
+            sequence.Join(tweenText);
+        }
+        else
+        {
+            Debug.LogError("m_textStage 가 없습니다.");
+        }
     }
 
 
