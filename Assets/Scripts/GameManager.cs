@@ -360,11 +360,11 @@ public class GameManager : Singleton<GameManager>
         //필드보스인지 아닌지에 따라 다르게 보상한다.ㄴ
         if(m_nCurrentMobNo == m_nMaxFieldMob)
         {
-            nCoin = Random.Range(7, 11);
+            nCoin = Random.Range(9, 13);
         }
         else
         {
-            nCoin = Random.Range(3, 6);
+            nCoin = Random.Range(4, 7);
         }
 
         //FieldUI의 coinUI RectTransform이 필요하므로 검사
