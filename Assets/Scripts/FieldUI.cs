@@ -22,6 +22,9 @@ public class FieldUI : MonoBehaviour
     [SerializeField]
     TextMeshProUGUI m_textStage = null;
 
+    Sequence m_seqStage = null;
+    Sequence m_seqMoney = null;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -41,10 +44,14 @@ public class FieldUI : MonoBehaviour
             Tween FadeIn = m_textStage.DOFade(1, 2f);
             //DOTween 무료 버전은 textMeshPro를 지원하지 않지만 아래처럼, DOTween.To()를 통해 사용가능하다.
             Tween tweenText = DOTween.To(() => "", (str) => m_textStage.text = str, strText, 0.5f);
-            Sequence sequence = DOTween.Sequence();
-            sequence.Prepend(FadeOut).SetEase(Ease.Linear);
-            sequence.Append(FadeIn).SetEase(Ease.Linear);
-            sequence.Join(tweenText);
+            if(m_seqStage != null && m_seqStage.IsActive())
+            {
+                m_seqStage.Kill();
+            } 
+            m_seqStage = DOTween.Sequence();
+            m_seqStage.Prepend(FadeOut).SetEase(Ease.Linear);
+            m_seqStage.Append(FadeIn).SetEase(Ease.Linear);
+            m_seqStage.Join(tweenText);
         }
         else
         {
@@ -99,7 +106,27 @@ public class FieldUI : MonoBehaviour
                 }
             }
 
-            StartCoroutine(CorMoneyText(fWaitTime, strMoney));
+            if (m_textMoney != null)
+            {
+
+                float fTweenTime = 0.5f / GameManager.Instance.MoveSpeed;
+
+                //DOTween.To()를 사용하여 현재 text에서 새로들어온 text로 값 변경
+                Tween tween = DOTween.To(() => "", (str) => m_textMoney.text = str, strMoney, fTweenTime);
+                if (m_seqMoney != null && m_seqMoney.IsActive())
+                {
+                    m_seqMoney.Kill();
+                }
+
+                m_seqMoney = DOTween.Sequence();
+                m_seqMoney.PrependInterval(fWaitTime); //fWaitTime만큼 초반에 기다리기
+                m_seqMoney.Append(tween).SetEase(Ease.Linear); 
+                
+            }
+            else
+            {
+                Debug.LogError("m_textMoeny가 없습니다.");
+            }
         }
         else
         {
@@ -107,23 +134,5 @@ public class FieldUI : MonoBehaviour
         }
     }
 
-    //DoTween을 사용하여 text 변환 -> 다만 Generator에서 coin이 생성되어 이동하는 시간. GameManager의 GetCoinTime동안 wait한다.
-    IEnumerator CorMoneyText(float fWaitTime, string strMoney)
-    {
-        yield return new WaitForSeconds(fWaitTime);
-        if(m_textMoney != null)
-        {
-            //현재 text값 받아오기
-            string strCurrentMoeny = m_textMoney.text;
-            //DOTween.To()를 사용하여 현재 text에서 새로들어온 text로 값 변경
-            DOTween.To(() => strCurrentMoeny, (str) => m_textMoney.text = str, strMoney, 0.5f).SetEase(Ease.Linear);
-            yield break;
-        }
-        else
-        {
-            Debug.LogError("m_textMoeny가 없습니다.");
-            yield break;
-        }
-    }
 
 }

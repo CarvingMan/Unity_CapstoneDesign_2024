@@ -18,32 +18,91 @@ public class GameManager : Singleton<GameManager>
 
 
     //***돈 관련***//
-    long m_nCurrentMoney = 0;
+    long m_nCurrentMoney = 50000;
     public long CurrentMoney { get { return m_nCurrentMoney; } }
-    float m_fGetCoinTime = 0.8f; //동전이 생성되고 CoinUI까지 가는 시간
-    public float GetCoinTime { get { return m_fGetCoinTime; } }
+    float m_fCoinMoveTime = 1f; //동전이 생성되고 CoinUI까지 가는 시간 해당 값에 m_fMoveSpeed값을 곱하여 사용
+    public float CoinMoveTime { get { return m_fCoinMoveTime; } }
     const int m_nCoinPrice = 10; //동전 하나당 값 -> m_fMoneyInc를 곱하여 제공
     const float m_fMoneyInc = 1.8f; //Stage별로 Coin당 값 증가량
 
-    //*** 능력치 레벨 ***//
-    //float m_fMoveLv = 0;
-    //float m_fAttackSpeedLv = 0;
-    //float m_fAttackDamegeLv = 0;
-    
 
-    //*** 능력치 값 ***//
-    private float m_fMoveStatus = 1; //이동속도 능력치 1이면 100%, 레벨업시 증가
+
+
+    //*** 능력치 관련 ***//
+    //열거형 상수 타입
+    public enum E_Status_Type
+    {
+        None,
+        AttackDamage,
+        AttackSpeed,
+        MoveSpeed,
+        CriticalProb,
+        CriticalRatio,
+        Max
+    }
+
+    //* 능력치 레벨 *//
+    int m_nAttackDamageLv = 1;
+    int m_nAttackSpeedLv = 1;
+    int m_nMoveSpeedLv = 1;
+    int m_nCriticalProbLv = 1;
+    int m_nCriticalRatioLv = 1;
+    public int AttackDamageLv { get { return m_nAttackDamageLv; } }
+    public int AttackSpeedLv { get { return m_nAttackSpeedLv; } }
+    public int MoveSpeedLv { get {  return m_nMoveSpeedLv; } }
+    public int CriticalProbLv { get { return m_nCriticalProbLv; } }
+    public int CriticalRatioLv { get { return m_nCriticalRatioLv; } }
+
+    const int m_nMaxDamageLv = 500; //AttackDamage의 최대 레벨
+    const int m_nMaxSpeedLv = 201; //Speed계열(move,attack) 최대 레벨 201이면 능력치 300%(레벨 1 : 100%)
+    const int m_nMaxCriticalLv = 101; //Critical계열 최대 레벨 101이면 능력치 prob : 100% ,Ratio : 200%
+    public int MaxDamageLv { get { return m_nMaxDamageLv; } }
+    public int MaxSpeedLv { get { return m_nMaxSpeedLv; } }
+    public int MaxCriticalLv { get { return m_nMaxCriticalLv; } }
+
+    //* 능력치 값 *//
+    private float m_fMoveSpeed = 1; //이동속도 능력치 1이면 100%, 레벨업시 증가
     private float m_fAttackSpeed = 1; //공격속도 위와 동일
     private float m_fAttackDamage = 10; //레벨업시 현재 데미지의 5% 씩 증가 
     private float m_fCriticalProb = 0; //치명타 확률 레벨업 시 0.01씩 증가 최대1
     private float m_fCriticalRatio = 1; //치명타 데미지 배수 -> 치명타가 나올 시 m_fAttackDamage에 곱하여 사용 레벨업 시 0.01f증가
+    public float AttackDamage { get { return m_fAttackDamage; } }
+    public float AttackSpeed { get { return m_fAttackSpeed; } }
+    public float MoveSpeed { get { return m_fMoveSpeed; } }
+    public float CriticalProb { get{ return m_fCriticalProb; } }
+    public float CriticalRatio { get { return m_fCriticalRatio; } }
+
+    //**레벨업 관련**//
+    //Status증가율//
+    const float m_fDamageStatusInc = 1.05f; //AttackDamage 증가율 기존 Dagamea에 곱하여 사용
+    const float m_fStatusInc = 0.01f; //AttackDamage를 제외 하고는 Percentage이기에 0.01 즉 1% 씩 +=
+
+    //레벨업 가격 (레벨업 시 가격 인상률에 따라 증가)
+    long m_nAttackDamagePrice = 50;
+    long m_nAttackSpeedPrice = 50;
+    long m_nMoveSpeedPrice = 50;
+    long m_nCriticalProbPrice = 100;
+    long m_nCriticalRatioPrice = 100;
+    public long AttackDamagePrice { get { return m_nAttackDamagePrice; } }
+    public long AttackSpeedPrice { get {return m_nAttackSpeedPrice; } }
+    public long MoveSpeedPrice { get {return m_nMoveSpeedPrice; } }
+    public long CriticalProbPrice { get {return m_nCriticalProbPrice; } }
+    public long CriticalRatioPrice { get {return m_nCriticalRatioPrice; } }
+
+    //가격 인상률
+    const float m_fDamagePriceInc = 1.04f; //m_fAttackDamage가격 인상률
+    const float m_fSpeedPriceInc = 1.1f; //Speed계열(공속,이속) 가격 인상률
+    const float m_fCriticalPriceInc = 1.25f; //Critical(치명타)계열 가격 인상률
+
+
+
+
 
     //**플레이어 전투 관련**//
     bool m_isFieldBattle = false; //전투중일 시 true
     public bool IsFieldBattle { get { return m_isFieldBattle; } }
     bool m_isPlayerAttack = false; //true시 플레이어가 attack 애니메이션을 play하고 animation 클립 이벤트에서 공격관련 함수 호출
     public bool IsPlayerAttack { get { return m_isPlayerAttack; } } 
-    public float AttackSpeed { get { return m_fAttackSpeed; } }
     GameObject m_objCurrentMob = null; //현재 player와 대치중인 monster
     public GameObject CurrentMob { get { return m_objCurrentMob; } }
 
@@ -51,15 +110,13 @@ public class GameManager : Singleton<GameManager>
     //**필드 몬스터 관련**//
     const float m_fBasicFieldMobHp = 50; //기본 필드몹 hp -> 여기서 랜덤으로 0~20% 증가하여 사용
     const float m_fBasicFieldBossHp = 100; //기본 필드보스 hp
-    const float m_fFieldMobHpInc = 1.2f; //Hp 증가율 스테이지 증가 할 때마다 BasicHp에 곱하여 제공
+    const float m_fFieldMobHpInc = 1.4f; //Hp 증가율 스테이지 증가 할 때마다 BasicHp에 곱하여 제공
 
 
     //이동관련 제어 멤버 변수 MoveBackGround,PlayerControl,MonsterControl등에서 사용
     private bool m_isMove = false;
     public bool IsMove { get { return m_isMove; }} //m_isMove 접근용 read only로 get만 가능
 
-    public float MoveStatus //m_fMoveStatus 접근용 프로퍼티
-    { get { return m_fMoveStatus; } }
 
 
 
@@ -137,7 +194,7 @@ public class GameManager : Singleton<GameManager>
     //***Money관련 메소드***//
 
     //돈 증가(리워드)
-    void EarnMoney(int nCoin)
+    void MoneyReward(int nCoin)
     {
         if(m_nStage <= 1)
         {
@@ -155,14 +212,150 @@ public class GameManager : Singleton<GameManager>
 
         if (m_objFieldUI != null) 
         {
+            float fWaitTime = m_fCoinMoveTime / m_fMoveSpeed;
             //FieldUI의 moneyText를 현재 값으로 변경해준다.(Tween 변환)
-            m_objFieldUI.GetComponent<FieldUI>().SetMoneyText(m_fGetCoinTime, m_nCurrentMoney);   
+            m_objFieldUI.GetComponent<FieldUI>().SetMoneyText(fWaitTime, m_nCurrentMoney);   
         }
         else
         {
             Debug.LogError("m_objFieldUI가 없습니다.");
         }
     }
+
+    void SpendMoney(long nMoney)
+    {
+        if (m_nCurrentMoney >= nMoney)
+        {
+            m_nCurrentMoney -= nMoney;
+        }
+        else
+        {
+            Debug.LogError("돈 부족 SpendMoney 호출 로직 확인 바람");
+            return;
+        }
+
+        if (m_objFieldUI != null)
+        {
+            m_objFieldUI.GetComponent<FieldUI>().SetMoneyText(0, m_nCurrentMoney);
+        }
+        else
+        {
+            Debug.LogError("m_objFieldUI가 없습니다.");
+        }
+    }
+
+
+    //레벨 업(Scroll View의 버튼 클릭 시)//
+    // E_Status_Type 별로 레벨업이 가능하면 진행 후 true반환, 불가능 할 시 false 반환
+    public bool LevelUp(E_Status_Type eStatusType)
+    {
+        if(eStatusType == E_Status_Type.AttackDamage)
+        {
+            if(m_nAttackDamagePrice <= m_nCurrentMoney && m_nAttackDamageLv < m_nMaxDamageLv)
+            {
+                //돈 소비
+                SpendMoney(m_nAttackDamagePrice);
+                //레벨업
+                m_nAttackDamageLv++;
+                //데미지 증가(소수점 올림) 데미지는 m_fADStausInc를 현제 데미지에 곱한다.
+                m_fAttackDamage = Mathf.Ceil(m_fAttackDamage * m_fDamageStatusInc);
+                //가격 인상
+                m_nAttackDamagePrice = (long)Mathf.Ceil(m_nAttackDamagePrice * m_fDamagePriceInc);
+                return true;
+            }
+            else
+            {
+                //돈이 부족하거나 최대 레벨인 경우
+                return false;
+            }
+        }
+        else if (eStatusType == E_Status_Type.AttackSpeed)
+        {
+            if (m_nAttackSpeedPrice <= m_nCurrentMoney && m_nAttackSpeedLv < m_nMaxSpeedLv)
+            {
+                //돈 소비
+                SpendMoney(m_nAttackSpeedPrice);
+                //레벨업
+                m_nAttackSpeedLv++;
+                //공속 1% 증가.
+                m_fAttackSpeed += m_fStatusInc;
+                //가격 인상
+                m_nAttackSpeedPrice = (long)Mathf.Ceil(m_nAttackSpeedPrice * m_fSpeedPriceInc);
+                return true;
+            }
+            else
+            {
+                //돈이 부족하거나 최대 레벨인 경우
+                return false;
+            }
+        }
+        else if (eStatusType == E_Status_Type.MoveSpeed)
+        {
+            if (m_nMoveSpeedPrice <= m_nCurrentMoney && m_nMoveSpeedLv < m_nMaxSpeedLv)
+            {
+                //돈 소비
+                SpendMoney(m_nMoveSpeedPrice);
+                //레벨업
+                m_nMoveSpeedLv++;
+                //이속 1% 증가.
+                m_fMoveSpeed += m_fStatusInc;
+                //가격 인상
+                m_nMoveSpeedPrice = (long)Mathf.Ceil(m_nMoveSpeedPrice * m_fSpeedPriceInc);
+                return true;
+            }
+            else
+            {
+                //돈이 부족하거나 최대 레벨인 경우
+                return false;
+            }
+        }
+        else if (eStatusType == E_Status_Type.CriticalProb)
+        {
+            if (m_nCriticalProbPrice <= m_nCurrentMoney && m_nCriticalProbLv < m_nMaxCriticalLv)
+            {
+                //돈 소비
+                SpendMoney(m_nCriticalProbPrice);
+                //레벨업
+                m_nCriticalProbLv++;
+                //치명타 확률 1% 증가.
+                m_fCriticalProb += m_fStatusInc;
+                //가격 인상
+                m_nCriticalProbPrice = (long)Mathf.Ceil(m_nCriticalProbPrice * m_fCriticalPriceInc);
+                return true;
+            }
+            else
+            {
+                //돈이 부족하거나 최대 레벨인 경우
+                return false;
+            }
+        }
+        else if (eStatusType == E_Status_Type.CriticalRatio)
+        {
+            if (m_nCriticalRatioPrice <= m_nCurrentMoney && m_nCriticalRatioLv < m_nMaxCriticalLv)
+            {
+                //돈 소비
+                SpendMoney(m_nCriticalRatioPrice);
+                //레벨업
+                m_nCriticalRatioLv++;
+                //치명타 배수 1% 증가.
+                m_fCriticalRatio += m_fStatusInc;
+                //가격 인상
+                m_nCriticalRatioPrice = (long)Mathf.Ceil(m_nCriticalRatioPrice * m_fCriticalPriceInc);
+                return true;
+            }
+            else
+            {
+                //돈이 부족하거나 최대 레벨인 경우
+                return false;
+            }
+        }
+        else
+        {
+            Debug.LogError("E_Status_Type 확인 바람");
+            return false;
+        }
+    }
+
 
 
     //***Field Stage 정비관련 메소드**//
@@ -387,7 +580,7 @@ public class GameManager : Singleton<GameManager>
         }
 
         //nCoin만큼 m_nCrrentMoney를 증가 시켜준다.
-        EarnMoney(nCoin);
+        MoneyReward(nCoin);
         m_objCurrentMob = null; //초기화
 
 

@@ -57,9 +57,9 @@ public class PlayerControl : MonoBehaviour
         {
             //player_run 애니메이션을 재생하기 전에
             //애니메이션 재생속도 파라미터로 지정해 놓은 fMoveSpeed를 GameManager의 m_fMoveStatus에 맞게 설정 
-            if(m_playerAnimator.GetFloat("fMoveSpeed")!= GameManager.Instance.MoveStatus)
+            if(m_playerAnimator.GetFloat("fMoveSpeed")!= GameManager.Instance.MoveSpeed)
             {
-                m_playerAnimator.SetFloat("fMoveSpeed", GameManager.Instance.MoveStatus);
+                m_playerAnimator.SetFloat("fMoveSpeed", GameManager.Instance.MoveSpeed);
             }
          
             m_playerAnimator.SetBool("isRun", true);

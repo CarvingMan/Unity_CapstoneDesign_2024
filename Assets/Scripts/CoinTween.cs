@@ -35,7 +35,8 @@ public class CoinTween : MonoBehaviour
     // Time들이 모두 0그대로 사용된다. 따라서 Awake()에서 해당 필드를 초기화 해 주어야 한다.
     private void Awake()
     {
-        float fTotalMoveTime = GameManager.Instance.GetCoinTime; //총 트윈으로 이동하는 시간
+        //총 트윈으로 이동하는 시간 GameManager의 m_fCoinMoveTime과 이속 m_fMoveSpeed를 곱하여 사용
+        float fTotalMoveTime = GameManager.Instance.CoinMoveTime / GameManager.Instance.MoveSpeed; 
         m_fExploTime = (fTotalMoveTime / 10) * 3.5f; //총 트윈시간에서 35% 사용
         m_fTargetTime = fTotalMoveTime - m_fExploTime; //총 트윈시간에서 m_fExploTime 제외 한 시간(65%)
         //Debug.Log("총시간 : " + fTotalMoveTime + "\n폭발시간: " + m_fExploTime + "Targe이동시간: " + m_fTargetTime);s

@@ -184,7 +184,7 @@ public class MoveMap : MonoBehaviour
         for (int i = 0; i < m_materialBG.Length; i++)
         {
             //GameManager의 MoveStatus(이속 능력치 1(100%)부터~) 같이 speed에 곱해준다.
-            float fSpeed = GameManager.Instance.MoveStatus * m_fLayerMoveSpeed[i]
+            float fSpeed = GameManager.Instance.MoveSpeed * m_fLayerMoveSpeed[i]
                 * m_fMoveSpeed * Time.deltaTime;
             // Matetial  _MainTex의 offset의 x를 증가 시켜준다.
             // 현재 offset을 Vector2.right * fSpeed에 계속 더해줘야 한다.
@@ -196,7 +196,7 @@ public class MoveMap : MonoBehaviour
     //타일맵들 이동 (타일들전체 Translate이동 카메라밖 지나갈 시 맨 끝으로 이동)
     void MoveTileGrounds()
     {
-        float fSpeed = GameManager.Instance.MoveStatus * m_fMoveSpeed * Time.deltaTime;
+        float fSpeed = GameManager.Instance.MoveSpeed * m_fMoveSpeed * Time.deltaTime;
         transform.Translate(Vector2.left * fSpeed);
         
         //만약 카메라와 가장 가까이에 있는 m_objTileGrounds의 첫번째 요소가
