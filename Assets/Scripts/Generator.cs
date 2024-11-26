@@ -88,7 +88,7 @@ public class Generator
         //HpBar프리팹 생성
         GameObject objHpBar = Object.Instantiate(m_objEnemyHpBarPrefab,canvas.transform);
         //FieldMob에게 생성된 HpBar를 넘겨준다.
-        objFieldMob.GetComponent<FieldMobControl>().SetHpBar(objHpBar);
+        objFieldMob.GetComponent<FieldMobControl>().InitHpBar(objHpBar);
     }
 
     //매개변수로 넘겨준 nCoin의 수만큼 vecGenPos에 coin프리팹 생성 수 해당 coin을 recTarget으로 Tween이동

@@ -18,7 +18,7 @@ public class GameManager : Singleton<GameManager>
 
 
     //***돈 관련***//
-    long m_nCurrentMoney = 50000;
+    long m_nCurrentMoney = 100000;
     public long CurrentMoney { get { return m_nCurrentMoney; } }
     float m_fCoinMoveTime = 1f; //동전이 생성되고 CoinUI까지 가는 시간 해당 값에 m_fMoveSpeed값을 곱하여 사용
     public float CoinMoveTime { get { return m_fCoinMoveTime; } }
@@ -214,7 +214,7 @@ public class GameManager : Singleton<GameManager>
         {
             float fWaitTime = m_fCoinMoveTime / m_fMoveSpeed;
             //FieldUI의 moneyText를 현재 값으로 변경해준다.(Tween 변환)
-            m_objFieldUI.GetComponent<FieldUI>().SetMoneyText(fWaitTime, m_nCurrentMoney);   
+            m_objFieldUI.GetComponent<FieldUI>().SetMoneyText(fWaitTime, m_nCurrentMoney,true,true);   
         }
         else
         {
@@ -236,7 +236,7 @@ public class GameManager : Singleton<GameManager>
 
         if (m_objFieldUI != null)
         {
-            m_objFieldUI.GetComponent<FieldUI>().SetMoneyText(0, m_nCurrentMoney);
+            m_objFieldUI.GetComponent<FieldUI>().SetMoneyText(0, m_nCurrentMoney,true,false);
         }
         else
         {

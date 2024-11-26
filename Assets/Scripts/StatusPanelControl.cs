@@ -104,7 +104,7 @@ public class StatusPanelControl : MonoBehaviour
             strNewPrice = ConvertFloatToText(fPrice) + " G";
             if (GameManager.Instance.AttackSpeedLv != GameManager.Instance.MaxSpeedLv)
             {
-                strNewLv = GameManager.Instance.AttackSpeedLv.ToString();
+                strNewLv = "Lv " + GameManager.Instance.AttackSpeedLv.ToString();
             }
             else
             {
@@ -120,7 +120,7 @@ public class StatusPanelControl : MonoBehaviour
             strNewPrice = ConvertFloatToText(fPrice) + " G";
             if (GameManager.Instance.MoveSpeedLv != GameManager.Instance.MaxSpeedLv)
             {
-                strNewLv = GameManager.Instance.MoveSpeedLv.ToString();
+                strNewLv = "Lv " + GameManager.Instance.MoveSpeedLv.ToString();
             }
             else
             {
@@ -136,7 +136,7 @@ public class StatusPanelControl : MonoBehaviour
             strNewPrice = ConvertFloatToText(fPrice) + " G";
             if (GameManager.Instance.CriticalProbLv != GameManager.Instance.MaxCriticalLv)
             {
-                strNewLv = GameManager.Instance.CriticalProbLv.ToString();
+                strNewLv = "Lv " + GameManager.Instance.CriticalProbLv.ToString();
             }
             else
             {
@@ -152,7 +152,7 @@ public class StatusPanelControl : MonoBehaviour
             strNewPrice = ConvertFloatToText(fPrice) + " G";
             if (GameManager.Instance.CriticalRatioLv != GameManager.Instance.MaxCriticalLv)
             {
-                strNewLv = GameManager.Instance.CriticalRatioLv.ToString();
+                strNewLv = "Lv " + GameManager.Instance.CriticalRatioLv.ToString();
             }
             else
             {

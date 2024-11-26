@@ -30,7 +30,7 @@ public class FieldUI : MonoBehaviour
     {
         GameManager.Instance.TakeObject(gameObject);
         SetStageText(GameManager.Instance.CurrentStage);
-        SetMoneyText(0, GameManager.Instance.CurrentMoney);
+        SetMoneyText(0, GameManager.Instance.CurrentMoney,false);
     }
 
 
@@ -75,7 +75,7 @@ public class FieldUI : MonoBehaviour
     }
 
     //FieldUI의 money UI창의 money text 표시
-    public void SetMoneyText(float fWaitTime, long nCurrentMoney)
+    public void SetMoneyText(float fWaitTime, long nCurrentMoney, bool isSound = true, bool isGet = true)
     {
         if(m_textMoney != null)
         {
@@ -120,7 +120,22 @@ public class FieldUI : MonoBehaviour
 
                 m_seqMoney = DOTween.Sequence();
                 m_seqMoney.PrependInterval(fWaitTime); //fWaitTime만큼 초반에 기다리기
-                m_seqMoney.Append(tween).SetEase(Ease.Linear); 
+                m_seqMoney.Append(tween).SetEase(Ease.Linear);
+                m_seqMoney.JoinCallback(() =>
+                {
+                    //오디오 출력
+                    if (isSound)
+                    {
+                        if (isGet)
+                        {
+                            AudioManager.Instance.CoinGetSound(GetComponent<AudioSource>());
+                        }
+                        else
+                        {
+                            AudioManager.Instance.CoinSpendSound(GetComponent<AudioSource>());
+                        }
+                    }
+                });
                 
             }
             else

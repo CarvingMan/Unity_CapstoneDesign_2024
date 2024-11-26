@@ -65,7 +65,7 @@ public class FieldMobControl : MonoBehaviour
     }
 
     //Generator에서 넘겨받은 HpBar를 세팅
-    public void SetHpBar(GameObject HpBar)
+    public void InitHpBar(GameObject HpBar)
     {
         m_objHpBar = HpBar;
         if (m_trHpBarPos != null) 
@@ -144,6 +144,7 @@ public class FieldMobControl : MonoBehaviour
         if(m_mobAnimator != null)
         {
             m_mobAnimator.Play("death");
+            AudioManager.Instance.FieldMobDieSound(GetComponent<AudioSource>()); //오디오 재생
             //death 애니메이션 클립을 재생하였으니, 레이어 0의 GetCurrentAnimatorState는
             //death 애니메이션이 재생중이다. 따라서 normalizedTime(0:시작~1:종료)가 1 보다 작을 때에는
             //아직 해당 클립이 재생중이므로 잠시 yeild return 해 준다. 
@@ -162,6 +163,7 @@ public class FieldMobControl : MonoBehaviour
             yield break;
         }
         //모든 로직이 끝났을 시
+        yield return new WaitForSeconds(0.3f);
         m_isCorDie = false;
         GameManager.Instance.FieldMobDie(); //GameManager에 사망을 알리고
         Destroy(m_objHpBar);
