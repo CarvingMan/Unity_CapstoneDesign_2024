@@ -44,8 +44,12 @@ public class DamageText : MonoBehaviour
             m_TMPDamage.color = color;
         }
 
-        //vecFrom이 FieldMob의 Head, World Position이기에 스크린좌표로 변경해야한다.
-        transform.position = Camera.main.WorldToScreenPoint(vecFrom);
+        //(수정)vecFrom이 FieldMob의 Head, World Position이기에 스크린좌표로 변경해야한다.
+        //(수정)transform.position = Camera.main.WorldToScreenPoint(vecFrom);
+
+        // 위 주석 코드에서 아래로 변경 : CameraResolution.cs와 함께
+        // Canvas Render mode를 screen space- camera 에서 Main camera로 지정하여 실행 시 UI좌표가 월드 좌표로 변경
+        transform.position = vecFrom;
 
         //목적지 좌표 설정
         Vector2 vecTo = vecFrom;
@@ -80,7 +84,10 @@ public class DamageText : MonoBehaviour
         //폰트 사이즈를 100에서 60으로 변화
         Tween fontSize = DOTween.To(() => 100, (fontSize) => { m_TMPDamage.fontSize = fontSize; }, 60, fFadeOutTime);
 
-        Tween move = transform.DOMove(Camera.main.WorldToScreenPoint(vecTo),fFadeOutTime);
+        //(수정)Tween move = transform.DOMove(Camera.main.WorldToScreenPoint(vecTo),fFadeOutTime);
+        // 위 주석 코드에서 아래로 변경 : CameraResolution.cs와 함께
+        // Canvas Render mode를 screen space- camera 에서 Main camera로 지정하여 실행 시 UI좌표가 월드 좌표로 변경
+        Tween move = transform.DOMove(vecTo, fFadeOutTime);
         Sequence sequence = DOTween.Sequence()
             .Append(fadeIn).SetEase(Ease.Linear)
             .Append(fadeOut)

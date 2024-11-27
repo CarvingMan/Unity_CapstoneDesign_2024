@@ -18,7 +18,7 @@ public class GameManager : Singleton<GameManager>
 
 
     //***돈 관련***//
-    long m_nCurrentMoney = 100000;
+    long m_nCurrentMoney = 150000;
     public long CurrentMoney { get { return m_nCurrentMoney; } }
     float m_fCoinMoveTime = 1f; //동전이 생성되고 CoinUI까지 가는 시간 해당 값에 m_fMoveSpeed값을 곱하여 사용
     public float CoinMoveTime { get { return m_fCoinMoveTime; } }
@@ -164,6 +164,11 @@ public class GameManager : Singleton<GameManager>
         {
             m_isInField = true; //나중에 씬을 나갈때 false로 설정
             SetFieldStage(false); //처음 혹은 다시 씬에 들어왔을 때 이므로 매개변수는 false로 하여 m_nCurrentMobNo는 그대로 유지
+        }
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Application.Quit();
         }
     }
 

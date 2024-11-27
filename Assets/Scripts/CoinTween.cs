@@ -45,8 +45,12 @@ public class CoinTween : MonoBehaviour
     //Tween Sequence 생성 함수 -> 해당 함수를 Generater.cs에서 생성과 동시에 호출하여 coin을 매개인자 RectTransform의 월드좌표로 이동
     public void CoinMove(RectTransform recTrarget)
     {
-        //매개인자로 들어온 recTarget : CoinUI RectTransform좌표를 world좌표로 변경하여 저장
-        Vector2 vecTargetPos = Camera.main.ScreenToWorldPoint(recTrarget.position);
+        //(수정)매개인자로 들어온 recTarget : CoinUI RectTransform좌표를 world좌표로 변경하여 저장
+        //(수정)Vector2 vecTargetPos = Camera.main.ScreenToWorldPoint(recTrarget.position);
+
+        // 위 주석 코드에서 아래로 변경 : CameraResolution.cs와 함께
+        // Canvas Render mode를 screen space- camera 에서 Main camera로 지정하여 실행 시 UI좌표가 월드 좌표로 변경
+        Vector2 vecTargetPos = recTrarget.position;
 
         //insideUnitCircle은 반경 1인 원 안에서 하나의 좌표를 랜덤으로 가져온다. 0.8f를 곱하여 반경을 0.8로 제한
         Vector2 vecRandCirPos = Random.insideUnitCircle * 0.8f;
