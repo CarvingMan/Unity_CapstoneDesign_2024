@@ -75,34 +75,34 @@ public class FieldUI : MonoBehaviour
     }
 
     //FieldUI의 money UI창의 money text 표시
-    public void SetMoneyText(float fWaitTime, long nCurrentMoney, bool isSound = true, bool isGet = true)
+    public void SetMoneyText(float fWaitTime, long lCurrentMoney, bool isSound = true, bool isGet = true)
     {
         if(m_textMoney != null)
         {
-            double fMoney = nCurrentMoney;
+            double dMoney = lCurrentMoney;
             string strMoney = "";
 
-            if(fMoney / 1000 < 1) // 현재 돈이 1000Coin 미만일 경우
+            if(dMoney / 1000 < 1) // 현재 돈이 1000Coin 미만일 경우
             {
-                strMoney = nCurrentMoney.ToString();
+                strMoney = lCurrentMoney.ToString();
             }
             else //현재 돈이 1000coin이상인 경우
             { 
-                fMoney = fMoney / 1000;
+                dMoney = dMoney / 1000;
 
-                if (fMoney >= 1000000) //현재 돈이 Billion(10억)이상인경우
+                if (dMoney >= 1000000) //현재 돈이 Billion(10억)이상인경우
                 {
-                    fMoney = fMoney / 1000000;
-                    strMoney = fMoney.ToString("F1") + "B";
+                    dMoney = dMoney / 1000000;
+                    strMoney = dMoney.ToString("F1") + "B";
                 }
-                else if(fMoney >= 1000) //현재 돈이 Million(100만) 이상인 경우
+                else if(dMoney >= 1000) //현재 돈이 Million(100만) 이상인 경우
                 {
-                    fMoney = fMoney / 1000;
-                    strMoney = fMoney.ToString("F1") + "M";
+                    dMoney = dMoney / 1000;
+                    strMoney = dMoney.ToString("F1") + "M";
                 }
                 else// 현재 돈이 Million 미만일 경우
                 {
-                    strMoney = fMoney.ToString("F1") + "K";
+                    strMoney = dMoney.ToString("F1") + "K";
                 }
             }
 

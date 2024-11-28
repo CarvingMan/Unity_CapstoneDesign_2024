@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,8 +10,8 @@ public class FieldMobControl : MonoBehaviour
      */
     Animator m_mobAnimator = null;
 
-    float m_fMaxHp = 0f;
-    float m_fCurrentHp = 0f;
+    double m_dMaxHp = 0f;
+    double m_dCurrentHp = 0f;
 
     bool m_isAlive = true; //false일 시 GameManager에서 GetDamage함수를 호출하지 않는다.
 
@@ -28,9 +29,9 @@ public class FieldMobControl : MonoBehaviour
     private void Awake()
     {
         m_isAlive=true;
-        m_fMaxHp = GameManager.Instance.SetEnemyHp(this.gameObject); //체력 설정
-        Debug.Log("몬스터 체력 : " + m_fMaxHp.ToString("F2"));
-        m_fCurrentHp = m_fMaxHp;
+        m_dMaxHp = GameManager.Instance.SetEnemyHp(this.gameObject); //체력 설정
+        Debug.Log("몬스터 체력 : " + m_dMaxHp.ToString("F2"));
+        m_dCurrentHp = m_dMaxHp;
         if (m_mobAnimator == null)
         {
             m_mobAnimator = GetComponent<Animator>();
@@ -89,15 +90,15 @@ public class FieldMobControl : MonoBehaviour
         return m_isAlive;
     }
 
-    public void SetDamege(float fDamage, float fAnimeSpeed)
+    public void SetDamege(double dDamage, float fAnimeSpeed)
     {
-        m_fCurrentHp -= fDamage;
-        Mathf.Clamp(m_fCurrentHp, 0f, m_fMaxHp); //m_fCurrentHp가 0 밑으로 떨어지지 않게 고정
+        m_dCurrentHp -= dDamage;
+        m_dCurrentHp = System.Math.Clamp(m_dCurrentHp, 0f, m_dMaxHp); //m_fCurrentHp가 0 밑으로 떨어지지 않게 고정
 
         //HpBar 세팅
         if (m_objHpBar != null)
         {
-            float fHpRatio = m_fCurrentHp / m_fMaxHp;
+            float fHpRatio = (float)(m_dCurrentHp / m_dMaxHp);
             //현재 남은 Hp비율을 넘겨준다.
             m_objHpBar.GetComponent<EnemyHpBar>().SetHpBar(fHpRatio);
         }
@@ -114,7 +115,7 @@ public class FieldMobControl : MonoBehaviour
             //즉 레이어 인덱스 -1로 설정시 이미 재생중인 애니메이션도 처음부터 다시 재생이 가능해 진다.
             //세번 째 매개인자는 normalizedTime: The time offset between zero and one.
             //쉽게말해 애니메이션 offset 0(시작) ~ 1(끝) 0.5로 설정시 중간부터 시작
-            if(m_fCurrentHp <= 0)
+            if(m_dCurrentHp <= 0)
             {
                 m_isAlive = false;
                 if(m_isCorDie == false)

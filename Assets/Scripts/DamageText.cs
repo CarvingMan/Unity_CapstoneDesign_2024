@@ -34,7 +34,7 @@ public class DamageText : MonoBehaviour
 
 
     // DamageText Tweening
-    public void SetDamageText(Vector2 vecFrom, float fDamage, float fAttackSpeed, bool isCritical)
+    public void SetDamageText(Vector2 vecFrom, double dDamage, float fAttackSpeed, bool isCritical)
     {
         //치명타일 시 red색상으로 변경
         if (isCritical)
@@ -56,7 +56,7 @@ public class DamageText : MonoBehaviour
         vecTo.y += 0.5f;
 
         //fDamage에 따른 Text설정 (1000 = "1K", 1000000 = "1M", 1000000000 = "1B")
-        m_TMPDamage.text = DamageToText(fDamage);
+        m_TMPDamage.text = DamageToText(dDamage);
         
         //기본시간에서 AttackSpeed(배속)을 나눈다. 
         float fTime = m_fTime / fAttackSpeed;
@@ -97,7 +97,7 @@ public class DamageText : MonoBehaviour
     }
     
     //fDamage 단위에 따른 Text 변환
-    string DamageToText(float fDamage)
+    string DamageToText(double fDamage)
     {
         string strDamage = "";
         if (fDamage / 1000 < 1)

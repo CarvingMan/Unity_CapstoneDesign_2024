@@ -106,7 +106,7 @@ public class Generator
     }
 
     //Tweenig하는 DamageText 생성 함수
-    public void GenerateDamageText(Canvas canvas, Vector2 vecHead, float fDamage, float fAttackSpeed, bool isCritical)
+    public void GenerateDamageText(Canvas canvas, Vector2 vecHead, double fDamage, float fAttackSpeed, bool isCritical)
     {
         //매개인자로 넘겨받은 캔버스의 자식으로 생성
         TextMeshProUGUI damageText = Object.Instantiate(m_TMPDamagePrefab, canvas.transform);

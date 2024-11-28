@@ -42,32 +42,32 @@ public class StatusPanelControl : MonoBehaviour
 
 
 
-    //단위 별로(K,M,B) 텍스트로 변환 시켜 반환
-    string ConvertFloatToText(float fNumber)
+    //단위 별로(K,M,B) 텍스트로 변환 시켜 반환 
+    string ConvertFloatToText(double dNumber)
     {
         string strNumber = "";
-        if(fNumber / 1000 < 1)
+        if(dNumber / 1000 < 1)
         {
             //1000 미만인경우
-            strNumber = fNumber.ToString("F0");
+            strNumber = dNumber.ToString("F0");
         }
         else
         {
-            fNumber = fNumber / 1000;
+            dNumber = dNumber / 1000;
             //1000이상인 경우
-            if(fNumber >= 1000000)
+            if(dNumber >= 1000000)
             {
-                fNumber = fNumber / 1000000;
-                strNumber = fNumber.ToString("F1") + "B";
+                dNumber = dNumber / 1000000;
+                strNumber = dNumber.ToString("F1") + "B";
             }
-            else if (fNumber >= 1000)
+            else if (dNumber >= 1000)
             {
-                fNumber = fNumber / 1000;
-                strNumber = fNumber.ToString("F1") + "M";
+                dNumber = dNumber / 1000;
+                strNumber = dNumber.ToString("F1") + "M";
             }
             else
             {
-                strNumber = fNumber.ToString("F1") + "K";
+                strNumber = dNumber.ToString("F1") + "K";
             }
         }
         return strNumber;
@@ -83,8 +83,8 @@ public class StatusPanelControl : MonoBehaviour
         if(m_eStatusType == GameManager.E_Status_Type.AttackDamage)
         {
             strNewStatus = ConvertFloatToText(GameManager.Instance.AttackDamage);
-            float fPrice = GameManager.Instance.AttackDamagePrice;
-            strNewPrice = ConvertFloatToText(fPrice) + " G";
+            double dPrice = GameManager.Instance.AttackDamagePrice;
+            strNewPrice = ConvertFloatToText(dPrice) + " G";
             if (GameManager.Instance.AttackDamageLv != GameManager.Instance.MaxDamageLv)
             {
                 strNewLv = "Lv " + GameManager.Instance.AttackDamageLv.ToString();
@@ -100,8 +100,8 @@ public class StatusPanelControl : MonoBehaviour
         else if(m_eStatusType == GameManager.E_Status_Type.AttackSpeed)
         {
             strNewStatus = (GameManager.Instance.AttackSpeed * 100).ToString("F0") + "%";
-            float fPrice = GameManager.Instance.AttackSpeedPrice;
-            strNewPrice = ConvertFloatToText(fPrice) + " G";
+            double dPrice = GameManager.Instance.AttackSpeedPrice;
+            strNewPrice = ConvertFloatToText(dPrice) + " G";
             if (GameManager.Instance.AttackSpeedLv != GameManager.Instance.MaxSpeedLv)
             {
                 strNewLv = "Lv " + GameManager.Instance.AttackSpeedLv.ToString();
@@ -116,8 +116,8 @@ public class StatusPanelControl : MonoBehaviour
         else if (m_eStatusType == GameManager.E_Status_Type.MoveSpeed)
         {
             strNewStatus = (GameManager.Instance.MoveSpeed * 100).ToString("F0") + "%";
-            float fPrice = GameManager.Instance.MoveSpeedPrice;
-            strNewPrice = ConvertFloatToText(fPrice) + " G";
+            double dPrice = GameManager.Instance.MoveSpeedPrice;
+            strNewPrice = ConvertFloatToText(dPrice) + " G";
             if (GameManager.Instance.MoveSpeedLv != GameManager.Instance.MaxSpeedLv)
             {
                 strNewLv = "Lv " + GameManager.Instance.MoveSpeedLv.ToString();
@@ -132,8 +132,8 @@ public class StatusPanelControl : MonoBehaviour
         else if (m_eStatusType == GameManager.E_Status_Type.CriticalProb)
         {
             strNewStatus = (GameManager.Instance.CriticalProb * 100).ToString("F0") + "%";
-            float fPrice = GameManager.Instance.CriticalProbPrice;
-            strNewPrice = ConvertFloatToText(fPrice) + " G";
+            double dPrice = GameManager.Instance.CriticalProbPrice;
+            strNewPrice = ConvertFloatToText(dPrice) + " G";
             if (GameManager.Instance.CriticalProbLv != GameManager.Instance.MaxCriticalLv)
             {
                 strNewLv = "Lv " + GameManager.Instance.CriticalProbLv.ToString();
@@ -148,8 +148,8 @@ public class StatusPanelControl : MonoBehaviour
         else if (m_eStatusType == GameManager.E_Status_Type.CriticalRatio)
         {
             strNewStatus = (GameManager.Instance.CriticalRatio * 100).ToString("F0") + "%";
-            float fPrice = GameManager.Instance.CriticalRatioPrice;
-            strNewPrice = ConvertFloatToText(fPrice) + " G";
+            double dPrice = GameManager.Instance.CriticalRatioPrice;
+            strNewPrice = ConvertFloatToText(dPrice) + " G";
             if (GameManager.Instance.CriticalRatioLv != GameManager.Instance.MaxCriticalLv)
             {
                 strNewLv = "Lv " + GameManager.Instance.CriticalRatioLv.ToString();

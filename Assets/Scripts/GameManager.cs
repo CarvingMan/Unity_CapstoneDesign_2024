@@ -18,8 +18,8 @@ public class GameManager : Singleton<GameManager>
 
 
     //***돈 관련***//
-    long m_nCurrentMoney = 150000;
-    public long CurrentMoney { get { return m_nCurrentMoney; } }
+    long m_lCurrentMoney = 150000;
+    public long CurrentMoney { get { return m_lCurrentMoney; } }
     float m_fCoinMoveTime = 1f; //동전이 생성되고 CoinUI까지 가는 시간 해당 값에 m_fMoveSpeed값을 곱하여 사용
     public float CoinMoveTime { get { return m_fCoinMoveTime; } }
     const int m_nCoinPrice = 10; //동전 하나당 값 -> m_fMoneyInc를 곱하여 제공
@@ -63,10 +63,10 @@ public class GameManager : Singleton<GameManager>
     //* 능력치 값 *//
     private float m_fMoveSpeed = 1; //이동속도 능력치 1이면 100%, 레벨업시 증가
     private float m_fAttackSpeed = 1; //공격속도 위와 동일
-    private float m_fAttackDamage = 10; //레벨업시 현재 데미지의 5% 씩 증가 
+    private double m_dAttackDamage = 10; //레벨업시 현재 데미지의 5% 씩 증가 
     private float m_fCriticalProb = 0; //치명타 확률 레벨업 시 0.01씩 증가 최대1
     private float m_fCriticalRatio = 1; //치명타 데미지 배수 -> 치명타가 나올 시 m_fAttackDamage에 곱하여 사용 레벨업 시 0.01f증가
-    public float AttackDamage { get { return m_fAttackDamage; } }
+    public double AttackDamage { get { return m_dAttackDamage; } }
     public float AttackSpeed { get { return m_fAttackSpeed; } }
     public float MoveSpeed { get { return m_fMoveSpeed; } }
     public float CriticalProb { get{ return m_fCriticalProb; } }
@@ -78,16 +78,16 @@ public class GameManager : Singleton<GameManager>
     const float m_fStatusInc = 0.01f; //AttackDamage를 제외 하고는 Percentage이기에 0.01 즉 1% 씩 +=
 
     //레벨업 가격 (레벨업 시 가격 인상률에 따라 증가)
-    long m_nAttackDamagePrice = 50;
-    long m_nAttackSpeedPrice = 50;
-    long m_nMoveSpeedPrice = 50;
-    long m_nCriticalProbPrice = 100;
-    long m_nCriticalRatioPrice = 100;
-    public long AttackDamagePrice { get { return m_nAttackDamagePrice; } }
-    public long AttackSpeedPrice { get {return m_nAttackSpeedPrice; } }
-    public long MoveSpeedPrice { get {return m_nMoveSpeedPrice; } }
-    public long CriticalProbPrice { get {return m_nCriticalProbPrice; } }
-    public long CriticalRatioPrice { get {return m_nCriticalRatioPrice; } }
+    long m_lAttackDamagePrice = 50;
+    long m_lAttackSpeedPrice = 50;
+    long m_lMoveSpeedPrice = 50;
+    long m_lCriticalProbPrice = 100;
+    long m_lCriticalRatioPrice = 100;
+    public long AttackDamagePrice { get { return m_lAttackDamagePrice; } }
+    public long AttackSpeedPrice { get {return m_lAttackSpeedPrice; } }
+    public long MoveSpeedPrice { get {return m_lMoveSpeedPrice; } }
+    public long CriticalProbPrice { get {return m_lCriticalProbPrice; } }
+    public long CriticalRatioPrice { get {return m_lCriticalRatioPrice; } }
 
     //가격 인상률
     const float m_fDamagePriceInc = 1.04f; //m_fAttackDamage가격 인상률
@@ -204,7 +204,7 @@ public class GameManager : Singleton<GameManager>
         if(m_nStage <= 1)
         {
             //스테이지가 1일 경우에는 CoinPrice에 Coin 수만큼 곱하여 기존 값에 더해준다.
-            m_nCurrentMoney += nCoin * m_nCoinPrice;
+            m_lCurrentMoney += nCoin * m_nCoinPrice;
         }
         else
         {
@@ -212,14 +212,14 @@ public class GameManager : Singleton<GameManager>
             //FieldMob 체력증가와 같은 방식, Stage가 오를 수록 자동으로 보상도 커진다.
             float fPrice = ((m_nStage - 1) *m_fMoneyInc) * m_nCoinPrice;
             //m_nCurrentMoney 가 long type이므로 fPrice를 반올림한Int로 바꾸어 nCoin 수 만큼 곱해준다.
-            m_nCurrentMoney += nCoin * Mathf.RoundToInt(fPrice);
+            m_lCurrentMoney += nCoin * Mathf.RoundToInt(fPrice);
         }
 
         if (m_objFieldUI != null) 
         {
             float fWaitTime = m_fCoinMoveTime / m_fMoveSpeed;
             //FieldUI의 moneyText를 현재 값으로 변경해준다.(Tween 변환)
-            m_objFieldUI.GetComponent<FieldUI>().SetMoneyText(fWaitTime, m_nCurrentMoney,true,true);   
+            m_objFieldUI.GetComponent<FieldUI>().SetMoneyText(fWaitTime, m_lCurrentMoney,true,true);   
         }
         else
         {
@@ -229,9 +229,9 @@ public class GameManager : Singleton<GameManager>
 
     void SpendMoney(long nMoney)
     {
-        if (m_nCurrentMoney >= nMoney)
+        if (m_lCurrentMoney >= nMoney)
         {
-            m_nCurrentMoney -= nMoney;
+            m_lCurrentMoney -= nMoney;
         }
         else
         {
@@ -241,7 +241,7 @@ public class GameManager : Singleton<GameManager>
 
         if (m_objFieldUI != null)
         {
-            m_objFieldUI.GetComponent<FieldUI>().SetMoneyText(0, m_nCurrentMoney,true,false);
+            m_objFieldUI.GetComponent<FieldUI>().SetMoneyText(0, m_lCurrentMoney,true,false);
         }
         else
         {
@@ -256,16 +256,16 @@ public class GameManager : Singleton<GameManager>
     {
         if(eStatusType == E_Status_Type.AttackDamage)
         {
-            if(m_nAttackDamagePrice <= m_nCurrentMoney && m_nAttackDamageLv < m_nMaxDamageLv)
+            if(m_lAttackDamagePrice <= m_lCurrentMoney && m_nAttackDamageLv < m_nMaxDamageLv)
             {
                 //돈 소비
-                SpendMoney(m_nAttackDamagePrice);
+                SpendMoney(m_lAttackDamagePrice);
                 //레벨업
                 m_nAttackDamageLv++;
                 //데미지 증가(소수점 올림) 데미지는 m_fADStausInc를 현제 데미지에 곱한다.
-                m_fAttackDamage = Mathf.Ceil(m_fAttackDamage * m_fDamageStatusInc);
+                m_dAttackDamage = System.Math.Ceiling(m_dAttackDamage * m_fDamageStatusInc);
                 //가격 인상
-                m_nAttackDamagePrice = (long)Mathf.Ceil(m_nAttackDamagePrice * m_fDamagePriceInc);
+                m_lAttackDamagePrice = (long)Mathf.Ceil(m_lAttackDamagePrice * m_fDamagePriceInc);
                 return true;
             }
             else
@@ -276,16 +276,16 @@ public class GameManager : Singleton<GameManager>
         }
         else if (eStatusType == E_Status_Type.AttackSpeed)
         {
-            if (m_nAttackSpeedPrice <= m_nCurrentMoney && m_nAttackSpeedLv < m_nMaxSpeedLv)
+            if (m_lAttackSpeedPrice <= m_lCurrentMoney && m_nAttackSpeedLv < m_nMaxSpeedLv)
             {
                 //돈 소비
-                SpendMoney(m_nAttackSpeedPrice);
+                SpendMoney(m_lAttackSpeedPrice);
                 //레벨업
                 m_nAttackSpeedLv++;
                 //공속 1% 증가.
                 m_fAttackSpeed += m_fStatusInc;
                 //가격 인상
-                m_nAttackSpeedPrice = (long)Mathf.Ceil(m_nAttackSpeedPrice * m_fSpeedPriceInc);
+                m_lAttackSpeedPrice = (long)Mathf.Ceil(m_lAttackSpeedPrice * m_fSpeedPriceInc);
                 return true;
             }
             else
@@ -296,16 +296,16 @@ public class GameManager : Singleton<GameManager>
         }
         else if (eStatusType == E_Status_Type.MoveSpeed)
         {
-            if (m_nMoveSpeedPrice <= m_nCurrentMoney && m_nMoveSpeedLv < m_nMaxSpeedLv)
+            if (m_lMoveSpeedPrice <= m_lCurrentMoney && m_nMoveSpeedLv < m_nMaxSpeedLv)
             {
                 //돈 소비
-                SpendMoney(m_nMoveSpeedPrice);
+                SpendMoney(m_lMoveSpeedPrice);
                 //레벨업
                 m_nMoveSpeedLv++;
                 //이속 1% 증가.
                 m_fMoveSpeed += m_fStatusInc;
                 //가격 인상
-                m_nMoveSpeedPrice = (long)Mathf.Ceil(m_nMoveSpeedPrice * m_fSpeedPriceInc);
+                m_lMoveSpeedPrice = (long)Mathf.Ceil(m_lMoveSpeedPrice * m_fSpeedPriceInc);
                 return true;
             }
             else
@@ -316,16 +316,16 @@ public class GameManager : Singleton<GameManager>
         }
         else if (eStatusType == E_Status_Type.CriticalProb)
         {
-            if (m_nCriticalProbPrice <= m_nCurrentMoney && m_nCriticalProbLv < m_nMaxCriticalLv)
+            if (m_lCriticalProbPrice <= m_lCurrentMoney && m_nCriticalProbLv < m_nMaxCriticalLv)
             {
                 //돈 소비
-                SpendMoney(m_nCriticalProbPrice);
+                SpendMoney(m_lCriticalProbPrice);
                 //레벨업
                 m_nCriticalProbLv++;
                 //치명타 확률 1% 증가.
                 m_fCriticalProb += m_fStatusInc;
                 //가격 인상
-                m_nCriticalProbPrice = (long)Mathf.Ceil(m_nCriticalProbPrice * m_fCriticalPriceInc);
+                m_lCriticalProbPrice = (long)Mathf.Ceil(m_lCriticalProbPrice * m_fCriticalPriceInc);
                 return true;
             }
             else
@@ -336,16 +336,16 @@ public class GameManager : Singleton<GameManager>
         }
         else if (eStatusType == E_Status_Type.CriticalRatio)
         {
-            if (m_nCriticalRatioPrice <= m_nCurrentMoney && m_nCriticalRatioLv < m_nMaxCriticalLv)
+            if (m_lCriticalRatioPrice <= m_lCurrentMoney && m_nCriticalRatioLv < m_nMaxCriticalLv)
             {
                 //돈 소비
-                SpendMoney(m_nCriticalRatioPrice);
+                SpendMoney(m_lCriticalRatioPrice);
                 //레벨업
                 m_nCriticalRatioLv++;
                 //치명타 배수 1% 증가.
                 m_fCriticalRatio += m_fStatusInc;
                 //가격 인상
-                m_nCriticalRatioPrice = (long)Mathf.Ceil(m_nCriticalRatioPrice * m_fCriticalPriceInc);
+                m_lCriticalRatioPrice = (long)Mathf.Ceil(m_lCriticalRatioPrice * m_fCriticalPriceInc);
                 return true;
             }
             else
@@ -475,17 +475,17 @@ public class GameManager : Singleton<GameManager>
 
             if (isMobAlive && m_isFieldBattle)
             {
-                float fAttackDamage = 0;
+                double fAttackDamage = 0;
                 //치명타 여부 확인
                 bool isCritical = IsCritical();
                 if (isCritical)
                 {
-                    //치명타에 걸렸을 시 m_fAttackDamage에 치명타 배수(m_fCriticalRatio)를 곱해준다.
-                    fAttackDamage = m_fAttackDamage * m_fCriticalRatio;
+                    //치명타에 걸렸을 시 m_dAttackDamage에 치명타 배수(m_fCriticalRatio)를 곱해준다.
+                    fAttackDamage = m_dAttackDamage * m_fCriticalRatio;
                 }
                 else
                 {
-                    fAttackDamage = m_fAttackDamage;
+                    fAttackDamage = m_dAttackDamage;
                 }
 
                 //대치중인 몬스터에게 플레이어의 공격력과 공속을 넘겨줘 데미지를 준다.
