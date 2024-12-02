@@ -27,4 +27,27 @@ public class BackendManager : Singleton<BackendManager>
     {
 
     }
+
+    //회원가입과 함께 상태 메세지 전송
+    public string SignIn(string strNickName, string strUserID, string strPassword)
+    {
+        string strMassage = "";
+        //닉네임 중복 확인
+
+        //커스텀 회원가입 진행
+        BackendReturnObject bro = Backend.BMember.CustomSignUp(strUserID, strPassword);
+
+        if (bro.IsSuccess()) 
+        {
+            //회원가입 성공시
+            strMassage = "회원가입 성공!";
+            Debug.Log(Backend.UserNickName);
+        }
+        else
+        {
+
+        }
+
+        return strMassage;
+    }
 }

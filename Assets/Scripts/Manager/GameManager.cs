@@ -130,10 +130,6 @@ public class GameManager : Singleton<GameManager>
     Generator m_csGenerator = new Generator();
 
 
-    //***Scene***//관련
-    Scene m_currentScene; //현재 씬
-
-
     // 부모 Singleton의 Awake()가 존재하기에 해당 Awake()를 무시하지 않고 GameManager의 Awake()를 
     // 정의 하려면 오버라이드 한 후 base.Awake() 즉, 부모 Awake()를 호출해야한다. 
     public override void Awake()
@@ -151,7 +147,6 @@ public class GameManager : Singleton<GameManager>
 
         m_isInField = false;
 
-        m_currentScene = SceneManager.GetActiveScene();
     }
  
 
@@ -160,7 +155,7 @@ public class GameManager : Singleton<GameManager>
     {
         //만약 GameScene에 처음 들어오고 FieldStage에 있을 때 
         //Field 몬스터를 설정 해 주어야 한다.
-        if(m_currentScene.name == "GameScene" && m_isInField == false)
+        if(SceneManager.GetActiveScene().name == "GameScene" && m_isInField == false)
         {
             m_isInField = true; //나중에 씬을 나갈때 false로 설정
             SetFieldStage(false); //처음 혹은 다시 씬에 들어왔을 때 이므로 매개변수는 false로 하여 m_nCurrentMobNo는 그대로 유지
