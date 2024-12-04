@@ -25,6 +25,7 @@ public class BackendManager : Singleton<BackendManager>
         else
         {
             Debug.LogError("초기화 실패 : " + bro); //실패일 경우 statusCode 400대 에러 발생
+            Application.Quit();
         }
     }
 
@@ -33,6 +34,42 @@ public class BackendManager : Singleton<BackendManager>
     {
 
     }
+
+
+
+    //로그인 성공여부와 함께 상태 메세지 out
+    public bool SignIn(string strUserID, string strPassword, out string strMessage)
+    {
+        BackendReturnObject bro = Backend.BMember.CustomLogin(strUserID, strPassword);
+        if (bro.IsSuccess())
+        {
+            strMessage = Backend.UserNickName + "님 환영합니다.";
+            return true;
+        }
+        else
+        {
+            if (bro.StatusCode == 400)
+            {
+                strMessage = "디바이스 정보 null";
+            }
+            else if(bro.StatusCode == 401)
+            {
+                //401 상태는 아이디or비번 이 잘못되었을 때, 서버 점검중일 때 다 포함이기에 bro.Message를 전달
+                strMessage = bro.Message;
+            }
+            else if(bro.StatusCode == 403)
+            {
+                strMessage = "차단당한 디바이스 입니다.";
+            }
+            else
+            {
+                strMessage = "로그인 오류";
+                Application.Quit();
+            }
+            return false;
+        }
+    }
+
 
     //회원가입 성공여부와 함께 상태 메세지 out
     //뒤끝 서버에서 회원가입 성공 시 로그인또한 자동으로 진행된다고 한다.
@@ -44,14 +81,6 @@ public class BackendManager : Singleton<BackendManager>
         if (broSignUp.IsSuccess())
         {
             strMessage = "회원가입 성공!";
-            if (Backend.IsLogin)
-            {
-                Debug.Log("로그인 중");
-            }
-            else
-            {
-                Debug.Log("로그인 안됨");
-            }
             return true;
         }
         else

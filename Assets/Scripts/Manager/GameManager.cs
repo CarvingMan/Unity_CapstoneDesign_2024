@@ -8,8 +8,15 @@ public class GameManager : Singleton<GameManager>
     //싱글톤 디자인 패턴 사용
     //제너릭 클래스 Singleton을 상속받아 GameManager 싱글톤 인스턴스 생성
 
+
+    //씬 변환 시 제어용
+    bool m_isInGameScene = false; //게임 씬 나갈 시 false, 들어올 시 true로 설정후 FieldMob생성
+
+    //유저 데이터 불러왔는지 확인용
+    bool m_isInitUserData = false; //로딩씬이고 해당 변수가 false이면 뒤끝서버에서 데이터를 가져온다.
+    public bool IsInitUserData { get { return m_isInitUserData; } }
+
     //***스테이지(Field) 관련***//
-    bool m_isInField = false; //현재 Field에 있는지(플레이어가 Field Stage에 있는지)
     int m_nStage = 1; //현재 Stage
     public int CurrentStage {  get { return m_nStage; } }
     const int m_nMaxFieldMob = 7; //Stage 당 몬스터 수
@@ -24,8 +31,6 @@ public class GameManager : Singleton<GameManager>
     public float CoinMoveTime { get { return m_fCoinMoveTime; } }
     const int m_nCoinPrice = 10; //동전 하나당 값 -> m_fMoneyInc를 곱하여 제공
     const float m_fMoneyInc = 1.8f; //Stage별로 Coin당 값 증가량
-
-
 
 
     //*** 능력치 관련 ***//
@@ -118,7 +123,9 @@ public class GameManager : Singleton<GameManager>
     public bool IsMove { get { return m_isMove; }} //m_isMove 접근용 read only로 get만 가능
 
 
-
+    //코루틴 제어 변수
+    bool m_isCorLoadScene = false;
+    
 
     //***GameManager에게 넘겨받을 인스턴스들***//
     //각각의 Start()에서 넘겨준다.
@@ -129,6 +136,7 @@ public class GameManager : Singleton<GameManager>
     //*** 직접 객체생성***//
     Generator m_csGenerator = new Generator();
 
+    
 
     // 부모 Singleton의 Awake()가 존재하기에 해당 Awake()를 무시하지 않고 GameManager의 Awake()를 
     // 정의 하려면 오버라이드 한 후 base.Awake() 즉, 부모 Awake()를 호출해야한다. 
@@ -145,7 +153,7 @@ public class GameManager : Singleton<GameManager>
         //MonoBehavior를 상속받지 않았기에 해당 스크립트의Init()을 해 주어야 한다.
         m_csGenerator.Init();
 
-        m_isInField = false;
+        m_isInGameScene = false;
 
     }
  
@@ -153,11 +161,11 @@ public class GameManager : Singleton<GameManager>
     // Update is called once per frame
     void Update()
     {
-        //만약 GameScene에 처음 들어오고 FieldStage에 있을 때 
+        //만약 GameScene에 처음 들어올 때 
         //Field 몬스터를 설정 해 주어야 한다.
-        if(SceneManager.GetActiveScene().name == "GameScene" && m_isInField == false)
+        if(SceneManager.GetActiveScene().name == "GameScene" && m_isInGameScene == false)
         {
-            m_isInField = true; //나중에 씬을 나갈때 false로 설정
+            m_isInGameScene = true; //나중에 씬을 나갈때 false로 설정
             SetFieldStage(false); //처음 혹은 다시 씬에 들어왔을 때 이므로 매개변수는 false로 하여 m_nCurrentMobNo는 그대로 유지
         }
 
@@ -165,6 +173,41 @@ public class GameManager : Singleton<GameManager>
         {
             Application.Quit();
         }
+
+        //테스트용
+        if (Input.GetKeyDown(KeyCode.W)) 
+        {
+            m_isInitUserData = true;
+            Debug.Log("확인ㄴ");
+        }
+
+    }
+
+    //Scene이동은 비동기 씬이동 LoadingScene을 제외하고는 
+    //아래의 함수를 통해 원하는 초를 지정하여 이동
+    public void LoadSceneWithTime(string strSceneName, float fTime = 0)
+    {
+        if(strSceneName != null && strSceneName.Length > 0)
+        {
+            if (!m_isCorLoadScene)
+            {
+                StartCoroutine(CorLoadScene(strSceneName, fTime));
+            }
+        }
+    }
+    
+    IEnumerator CorLoadScene(string strSceneName, float fTime)
+    {
+        m_isCorLoadScene = true;
+        yield return new WaitForSeconds(fTime);
+        m_isCorLoadScene = false;
+        if(SceneManager.GetActiveScene().name == "GameScene") //만약 게임 씬이라면
+        {
+            //씬 이동하며 m_isInGameScene을 false로 해 주어야 한다. 
+            //이후 다시 GameScene으로 들어올 시 update()에서 SetFieldStage(false);
+            m_isInGameScene = false;
+        }
+        SceneManager.LoadScene(strSceneName);
     }
 
 

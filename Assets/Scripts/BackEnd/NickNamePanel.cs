@@ -66,6 +66,7 @@ public class NickNamePanel : MonoBehaviour
             {
                 m_btnNickName.interactable = false;//더이상 닉네임 요청 할 수 없게 비활성화
                 //로딩씬 이동
+                GameManager.Instance.LoadSceneWithTime("LoadingScene", 0.5f);
             }
         }
         else

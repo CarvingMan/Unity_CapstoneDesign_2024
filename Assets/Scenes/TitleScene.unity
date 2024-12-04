@@ -158,7 +158,7 @@ RectTransform:
   - {fileID: 791570184}
   - {fileID: 846709677}
   - {fileID: 1099871406}
-  m_Father: {fileID: 331878325}
+  m_Father: {fileID: 944410444}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -1034,7 +1034,6 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 944410444}
-  - {fileID: 15187320}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -2657,6 +2656,7 @@ RectTransform:
   - {fileID: 1119455249}
   - {fileID: 1631451242}
   - {fileID: 376230672}
+  - {fileID: 15187320}
   m_Father: {fileID: 331878325}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -4848,7 +4848,7 @@ GameObject:
   - component: {fileID: 1405663189}
   - component: {fileID: 1405663188}
   m_Layer: 5
-  m_Name: SignUpTMP
+  m_Name: SignInTMP
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5456,6 +5456,7 @@ GameObject:
   - component: {fileID: 1631451242}
   - component: {fileID: 1631451244}
   - component: {fileID: 1631451243}
+  - component: {fileID: 1631451245}
   m_Layer: 5
   m_Name: SigInPanel
   m_TagString: Untagged
@@ -5526,6 +5527,23 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1631451241}
   m_CullTransparentMesh: 1
+--- !u!114 &1631451245
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1631451241}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 177e158ca3c162247b5f408f749cd3de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_inputID: {fileID: 1266817301}
+  m_inputPW: {fileID: 1085417113}
+  m_btnLogIn: {fileID: 1201098451}
+  m_btnClose: {fileID: 963152823}
+  m_tmpResult: {fileID: 566958070}
 --- !u!1 &1665855196
 GameObject:
   m_ObjectHideFlags: 0
@@ -6512,7 +6530,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2095013683}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1631451241}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
 --- !u!114 &2095013683
 MonoBehaviour:
   m_ObjectHideFlags: 0
