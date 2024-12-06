@@ -24,8 +24,8 @@ public class LoadingScene : MonoBehaviour
     [SerializeField]
     GameObject m_objLoadingMob = null; //로딩중 화면에 애니메이션 재생할 오브젝트
 
-    //[SerializeField]
-    //GameObject m_objFadeInOutPanel = null; //FadeInOutPanel.cs가 부착된 패널
+    [SerializeField]
+    GameObject m_objFadeInOutPanel = null; //FadeInOutPanel.cs가 부착된 패널
 
     Sequence m_seqMessage = null; //로딩 메세지 tween 시퀀스
 
@@ -48,12 +48,20 @@ public class LoadingScene : MonoBehaviour
             Debug.LogError("m_tmpMessage가 없습니다.");
         }
 
+        if (m_objFadeInOutPanel == null) 
+        {
+            Debug.LogError("m_objFadeInOutPanel이 없습니다.");
+        }
+
         m_isUserData = GameManager.Instance.IsInitUserData;
 
 
         //코루틴 실행
         StartCoroutine(CorWaitUserData());;
         StartCoroutine(CorAsyncScene());
+
+        //테스트 지워야 함
+        BackendManager.Instance.LoadUserData();
     }
 
     //m_tmpMessage 트윈
@@ -142,6 +150,7 @@ public class LoadingScene : MonoBehaviour
         //전부 로드 되었을 시
         SetMessageTween("로딩 완료!", 0.5f);
         m_objLoadingMob.GetComponent<Animator>().SetBool("isDead", true);
+        m_objFadeInOutPanel.GetComponent<FadeInOutPanel>().FadeOutPanel(); //panel FadeOut
         yield return new WaitForSeconds(2f);
 
         operation.allowSceneActivation = true; //씬 활성화

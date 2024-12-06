@@ -81,7 +81,21 @@ public class BackendManager : Singleton<BackendManager>
         if (broSignUp.IsSuccess())
         {
             strMessage = "회원가입 성공!";
-            return true;
+
+            //회원 가입 성공시 기본 데이터 삽입(스키마 정의로 기본값 설정 해 두었기에 Param필요 x)
+            var bro = Backend.GameData.Insert("USER_DATA");
+            if (bro.IsSuccess())
+            {
+
+                return true;
+            }
+            else
+            {
+                Debug.LogError("기본 USER_DATA row 삽입 오류");
+                strMessage ="기본 USER_DATA row 삽입 오류";
+                return false;
+            }
+
         }
         else
         {
@@ -125,7 +139,15 @@ public class BackendManager : Singleton<BackendManager>
             {
                 //GameScene으로 이동
                 strMessage = Backend.UserNickName+"님 환영합니다!";
+                Param param = new Param();
+                param.Add("NickName", Backend.UserNickName);
+                BackendReturnObject bro = Backend.GameData.Update("USER_DATA",new Where(), param);
+                if (bro.IsSuccess()) 
+                {
+                    Debug.Log(bro);
+                }
                 return true;
+                
             }
             {
                 // 해당 로직은 맨 처음 broCheckName에서 중복 및 공백 등 생성 가능 여부를 확인후 들어오기에
@@ -152,5 +174,30 @@ public class BackendManager : Singleton<BackendManager>
             }
             return false;
         }
+    }
+
+    //유저 데이터 불러오기(비동기)
+    public void LoadUserData()
+    {
+        Backend.GameData.GetMyData("USER_DATA", new Where(), (bro) =>
+        {
+            if (bro.IsSuccess())
+            {
+                Debug.Log("데이터 조회 성공" + bro);
+                //json으로 리턴된 데이터를 받아온다.
+                LitJson.JsonData gameDataJason = bro.FlattenRows();
+                for(int i=0; i < gameDataJason.Count; i++)
+                {
+                    Debug.Log(gameDataJason[i]["NickName"]);
+                    Debug.Log(gameDataJason[i]["AttackDamage"]);
+                    Debug.Log(gameDataJason[i]["AttackDamagePrice"]);
+                }
+            }
+            else
+            {
+                Debug.LogError("데이터 조회 실패" + bro);
+                Application.Quit();
+            }
+        });
     }
 }

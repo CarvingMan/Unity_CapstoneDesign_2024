@@ -40,9 +40,19 @@ public class FieldUI : MonoBehaviour
         if(m_textStage != null)
         {
             string strText = "Stage" + nStage.ToString();
-            Tween FadeOut = m_textStage.DOFade(0, 0.5f);
-            Tween FadeIn = m_textStage.DOFade(1, 2f);
-            //DOTween 무료 버전은 textMeshPro를 지원하지 않지만 아래처럼, DOTween.To()를 통해 사용가능하다.
+            Tween FadeOut = DOTween.To(() => 1.0f, (alpha) =>
+            {
+                Color color = m_textStage.color;
+                color.a = alpha;
+                m_textStage.color = color;
+            }, 0, 0.5f); ;
+            Tween FadeIn = DOTween.To(() => 0.0f, alpha =>
+            {
+                Color color = m_textStage.color;
+                color.a = alpha;
+                m_textStage.color = color;
+            }, 1, 2);
+            //DOTween 무료 버전은 DoText 함수를 textMeshPro를 지원하지 않지만 아래처럼, DOTween.To()를 통해 사용가능하다.
             Tween tweenText = DOTween.To(() => "", (str) => m_textStage.text = str, strText, 0.5f);
             if(m_seqStage != null && m_seqStage.IsActive())
             {
