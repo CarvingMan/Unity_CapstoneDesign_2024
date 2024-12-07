@@ -9,6 +9,8 @@ public class FadeInOutPanel : MonoBehaviour
 {
     /*
         Scene이 전환될 시 Fade In/Out 효과를 줄 panel에 부착
+        주의할 점은 해당 패널에 Raycast Target 을 체크해제해야한다.
+        -> 체크 되어있을 시 패널 뒤 UI와 상호작용 불가
      */
     [Tooltip("시작 시 FadeIn?")]
     [SerializeField] bool m_isStart = true; //Scene시작시 FadeIn 효과를 줄지 Inspacter에서 설정
@@ -50,7 +52,7 @@ public class FadeInOutPanel : MonoBehaviour
     public void FadeOutPanel()
     {
         //이미 시퀀스가 실행중일 시 Kill()
-        if(m_seqFade != null && m_seqFade.IsActive())
+        if (m_seqFade != null && m_seqFade.IsActive())
         {
             m_seqFade.Kill();
         }

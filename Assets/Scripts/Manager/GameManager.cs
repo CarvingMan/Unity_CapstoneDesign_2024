@@ -12,12 +12,12 @@ public class GameManager : Singleton<GameManager>
     //씬 변환 시 제어용
     bool m_isInGameScene = false; //게임 씬 나갈 시 false, 들어올 시 true로 설정후 FieldMob생성
 
-    //유저 데이터 불러왔는지 확인용
+    //유저 데이터 불러왔는지 확인용 -> 로그아웃 시 초기화
     bool m_isInitUserData = false; //로딩씬이고 해당 변수가 false이면 뒤끝서버에서 데이터를 가져온다.
     public bool IsInitUserData { get { return m_isInitUserData; } }
 
     //***스테이지(Field) 관련***//
-    int m_nStage = 1; //현재 Stage
+    int m_nStage = 1; //현재 Stage -> LoadingScene에서 서버에서 받아옴
     public int CurrentStage {  get { return m_nStage; } }
     const int m_nMaxFieldMob = 7; //Stage 당 몬스터 수
     int m_nCurrentMobNo = 0; //현재 대치중인 field mob 번호 -> 8마리를 잡을 시 Stage++;
@@ -25,7 +25,7 @@ public class GameManager : Singleton<GameManager>
 
 
     //***돈 관련***//
-    long m_lCurrentMoney = 150000;
+    long m_lCurrentMoney = 0; //-> LoadingScene에서 서버에서 받아옴
     public long CurrentMoney { get { return m_lCurrentMoney; } }
     float m_fCoinMoveTime = 1f; //동전이 생성되고 CoinUI까지 가는 시간 해당 값에 m_fMoveSpeed값을 곱하여 사용
     public float CoinMoveTime { get { return m_fCoinMoveTime; } }
@@ -46,8 +46,8 @@ public class GameManager : Singleton<GameManager>
         Max
     }
 
-    //* 능력치 레벨 *//
-    int m_nAttackDamageLv = 1;
+    //* 능력치 레벨 *// -> LoadingScene에서 뒤끝 서버에서 받아옴
+    int m_nAttackDamageLv = 1; 
     int m_nAttackSpeedLv = 1;
     int m_nMoveSpeedLv = 1;
     int m_nCriticalProbLv = 1;
@@ -65,7 +65,7 @@ public class GameManager : Singleton<GameManager>
     public int MaxSpeedLv { get { return m_nMaxSpeedLv; } }
     public int MaxCriticalLv { get { return m_nMaxCriticalLv; } }
 
-    //* 능력치 값 *//
+    //* 능력치 값 *// -> LoadingScene에서 뒤끝 서버에서 받아옴
     private float m_fMoveSpeed = 1; //이동속도 능력치 1이면 100%, 레벨업시 증가
     private float m_fAttackSpeed = 1; //공격속도 위와 동일
     private double m_dAttackDamage = 10; //레벨업시 현재 데미지의 5% 씩 증가 
@@ -174,13 +174,6 @@ public class GameManager : Singleton<GameManager>
             Application.Quit();
         }
 
-        //테스트용
-        if (Input.GetKeyDown(KeyCode.W)) 
-        {
-            m_isInitUserData = true;
-            Debug.Log("확인ㄴ");
-        }
-
     }
 
     //Scene이동은 비동기 씬이동 LoadingScene을 제외하고는 
@@ -210,6 +203,41 @@ public class GameManager : Singleton<GameManager>
         SceneManager.LoadScene(strSceneName);
     }
 
+
+    //LoadingScene에서 BackendManaer.Instance의 LoadUserData()를 호출하면 비동기로 USER_DATA의 테이블을
+    //가져와 완료될 시 해당 함수를 호출한다. 넘겨받은 JsonData 를 해당 멤버변수에 넣어준다
+    public void SetUserData(LitJson.JsonData jsonData)
+    {
+        if (jsonData.Count > 0)
+        {
+            //스테이지 및 돈 저장
+            m_nStage = int.Parse(jsonData[0]["Stage"].ToString());
+            m_lCurrentMoney = long.Parse(jsonData[0]["Money"].ToString());
+
+            //능력치 값 저장
+            m_dAttackDamage = double.Parse(jsonData[0]["AttackDamage"].ToString());
+            m_fAttackSpeed = float.Parse(jsonData[0]["AttackSpeed"].ToString());
+            m_fMoveSpeed = float.Parse(jsonData[0]["MoveSpeed"].ToString());
+            m_fCriticalProb = float.Parse(jsonData[0]["CriticalProb"].ToString());
+            m_fCriticalRatio = float.Parse(jsonData[0]["CriticalRatio"].ToString());
+
+            //능력치 레벨 저장
+            m_nAttackDamageLv = int.Parse(jsonData[0]["AttackDamageLv"].ToString());
+            m_nAttackSpeedLv = int.Parse(jsonData[0]["AttackSpeedLv"].ToString());
+            m_nMoveSpeedLv = int.Parse(jsonData[0]["MoveSpeedLv"].ToString());
+            m_nCriticalProbLv = int.Parse(jsonData[0]["CriticalProbLv"].ToString());
+            m_nCriticalRatioLv = int.Parse(jsonData[0]["CriticalRatioLv"].ToString());
+
+            //레벨업 가격 저장
+            m_lAttackDamagePrice = long.Parse(jsonData[0]["AttackDamagePrice"].ToString());
+            m_lAttackSpeedPrice = long.Parse(jsonData[0]["AttackSpeedPrice"].ToString());
+            m_lMoveSpeedPrice = long.Parse(jsonData[0]["MoveSpeedPrice"].ToString());
+            m_lCriticalProbPrice = long.Parse(jsonData[0]["CriticalProbPrice"].ToString());
+            m_lCriticalRatioPrice = long.Parse(jsonData[0]["CriticalRatioPrice"].ToString());
+
+            m_isInitUserData = true;
+        }
+    }
 
     //GameManager에서 필요한 오브젝트들을 넘겨주는 함수 -> 각각의 Start()에서 넘겨준다.
     public void TakeObject(GameObject obj)

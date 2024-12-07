@@ -60,8 +60,13 @@ public class LoadingScene : MonoBehaviour
         StartCoroutine(CorWaitUserData());;
         StartCoroutine(CorAsyncScene());
 
-        //테스트 지워야 함
-        BackendManager.Instance.LoadUserData();
+        //GameManager에서 m_isInitUserData가 false일 시 호출
+        //BackendManager에서 비동기로 USER_DATA정보를 받아오고 GameManager에게 넘겨준다.
+        //GameManager에서 값 할당이 끝날 시 m_isInitUserData를 true로 바꾼다.
+        if(m_isUserData == false)
+        {
+            BackendManager.Instance.LoadUserData();
+        }
     }
 
     //m_tmpMessage 트윈
@@ -93,7 +98,7 @@ public class LoadingScene : MonoBehaviour
         SetMessageTween(strMessage,2);
         while(GameManager.Instance.IsInitUserData == false)
         {
-            if(fTime >= 5)
+            if(fTime >= 5) //5초마다 다시 텍스트 tween 재생
             {
                 fTime = 0;
                 SetMessageTween(strMessage,2);
@@ -103,8 +108,10 @@ public class LoadingScene : MonoBehaviour
             fTime += fWait;
             
         }
-        Debug.Log(GameManager.Instance.IsInitUserData);
+        //Debug.Log(GameManager.Instance.IsInitUserData);
         //데이터 불러오기 완료 될 시
+        //데이터 로드 되는 속도가 너무 빨라 시현시 위의 로직을 보기위해 기다림(불필요)
+        yield return new WaitForSeconds(2); 
         m_isUserData = true;
     }
 

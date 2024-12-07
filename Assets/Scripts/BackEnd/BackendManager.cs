@@ -4,6 +4,7 @@ using UnityEngine;
 using BackEnd;
 using UnityEditor.PackageManager;
 using UnityEngine.SceneManagement;
+using System;
 
 public class BackendManager : Singleton<BackendManager>
 {
@@ -176,7 +177,7 @@ public class BackendManager : Singleton<BackendManager>
         }
     }
 
-    //유저 데이터 불러오기(비동기)
+    //유저 데이터 불러오기(비동기) -> LoadingScene.cs에서 호출
     public void LoadUserData()
     {
         Backend.GameData.GetMyData("USER_DATA", new Where(), (bro) =>
@@ -184,14 +185,35 @@ public class BackendManager : Singleton<BackendManager>
             if (bro.IsSuccess())
             {
                 Debug.Log("데이터 조회 성공" + bro);
-                //json으로 리턴된 데이터를 받아온다.
+                //json으로 리턴된 데이터를 받아온다. 
+                //FlattenRow()는 언마샬(데이터 타입제외 순수 데이터값 만 가져온다.)
                 LitJson.JsonData gameDataJason = bro.FlattenRows();
-                for(int i=0; i < gameDataJason.Count; i++)
+                if(gameDataJason.Count <= 0)
                 {
-                    Debug.Log(gameDataJason[i]["NickName"]);
-                    Debug.Log(gameDataJason[i]["AttackDamage"]);
-                    Debug.Log(gameDataJason[i]["AttackDamagePrice"]);
+                    Debug.LogError("USER_DATA 없음");
+                    return;
                 }
+                else
+                {
+                    //받아온 json데이터를 GameManager에 넘겨 세팅한다.
+                    //추후 GameManager에서 값 할당이 완료되면 LoadingScene에서 GameScene으로 넘어간다.
+                    GameManager.Instance.SetUserData(gameDataJason);
+                    return;
+                }
+                //for(int i=0; i < gameDataJason.Count; i++)
+                //{
+                //    Debug.Log(gameDataJason[i]["NickName"]);
+                //    Debug.Log(gameDataJason[i]["AttackDamage"]);
+                //    Debug.Log(gameDataJason[i]["AttackDamagePrice"]);
+                //    Debug.Log(gameDataJason[i]["updatedAt"]);
+
+                    
+                //    string updatedAtStr = gameDataJason[i]["updatedAt"].ToString();
+
+                //    //ISO 8601 형식의 UTC 이기에 로컬타임으로 변경
+                //    DateTime data = DateTime.Parse(gameDataJason[i]["updatedAt"].ToString()).ToLocalTime();
+                //    Debug.Log(data.ToString());
+                //}
             }
             else
             {
