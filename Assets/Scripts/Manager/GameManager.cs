@@ -18,6 +18,7 @@ public class GameManager : Singleton<GameManager>
 
     //***스테이지(Field) 관련***//
     int m_nStage = 1; //현재 Stage -> LoadingScene에서 서버에서 받아옴
+    public int Stage {  get { return m_nStage; } }
     public int CurrentStage {  get { return m_nStage; } }
     const int m_nMaxFieldMob = 7; //Stage 당 몬스터 수
     int m_nCurrentMobNo = 0; //현재 대치중인 field mob 번호 -> 8마리를 잡을 시 Stage++;
@@ -182,7 +183,7 @@ public class GameManager : Singleton<GameManager>
     {
         if(strSceneName != null && strSceneName.Length > 0)
         {
-            if (!m_isCorLoadScene)
+            if (!m_isCorLoadScene && SceneManager.GetActiveScene().name != strSceneName)
             {
                 StartCoroutine(CorLoadScene(strSceneName, fTime));
             }
@@ -192,14 +193,29 @@ public class GameManager : Singleton<GameManager>
     IEnumerator CorLoadScene(string strSceneName, float fTime)
     {
         m_isCorLoadScene = true;
-        yield return new WaitForSeconds(fTime);
-        m_isCorLoadScene = false;
         if(SceneManager.GetActiveScene().name == "GameScene") //만약 게임 씬이라면
         {
             //씬 이동하며 m_isInGameScene을 false로 해 주어야 한다. 
             //이후 다시 GameScene으로 들어올 시 update()에서 SetFieldStage(false);
             m_isInGameScene = false;
         }
+
+        //만약 타이틀 씬으로 이동한다면 로그아웃 되었다는 뜻이므로 m_isInitUserData를 false로 초기화
+        if(strSceneName == "TitleScene")
+        {
+            m_isInitUserData = false;
+        }
+
+        //만약 씬 이동시 timeScale이 0이라면 다시 1로 바꾸어준다.
+        //예로 바로 위 조건문에서 GameScene -> TitleScene이동시 
+        //메뉴 페널을 열어(timeScale = 0이된다.) 로그아웃 버튼을 누른 상황에서 timeScale을 1로 바꾸어 주어야 한다. 
+        if(Time.timeScale == 0) 
+        {
+            Time.timeScale = 1;
+        }
+
+        yield return new WaitForSeconds(fTime);
+        m_isCorLoadScene = false;
         SceneManager.LoadScene(strSceneName);
     }
 
@@ -290,6 +306,16 @@ public class GameManager : Singleton<GameManager>
         else
         {
             Debug.LogError("m_objFieldUI가 없습니다.");
+        }
+    }
+
+    //위 MoneyReward()는 몹 사냥후 코인 얻을 때 로직이며 코인 tween없이 즉시 세팅(접속보상등)private
+    private void SetMoney(long lMoney)
+    {
+        m_lCurrentMoney += lMoney;
+        if(m_objFieldUI != null)
+        {
+            m_objFieldUI.GetComponent<FieldUI>().SetMoneyText(0, m_lCurrentMoney);
         }
     }
 
@@ -441,6 +467,8 @@ public class GameManager : Singleton<GameManager>
             {
                 m_nCurrentMobNo = 0; //Mob번호 초기화
                 m_nStage++; //스테이지 증가
+                //스테이지 증가시 자동 USER_DATA 뒤끝 서버에 Update(비동기)
+                BackendManager.Instance.SaveUserData(false); //false는 로그아웃을 안하겠다는 매개인자
 
                 //StageText 세팅(Tweening)
                 if (m_objFieldUI != null)

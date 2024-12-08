@@ -45,11 +45,17 @@ public class BackendManager : Singleton<BackendManager>
         if (bro.IsSuccess())
         {
             strMessage = Backend.UserNickName + "님 환영합니다.";
+            //retuen true 시 SignInPanel.cs에서 GameScene으로 이동
             return true;
         }
         else
         {
-            if (bro.StatusCode == 400)
+            if (bro.StatusCode == 0)
+            {
+                Debug.Log(bro.Message);
+                strMessage = "서버 접속 오류 네트워트 환경을 확인해주세요";
+            }
+            else if (bro.StatusCode == 400)
             {
                 strMessage = "디바이스 정보 null";
             }
@@ -94,6 +100,7 @@ public class BackendManager : Singleton<BackendManager>
             {
                 Debug.LogError("기본 USER_DATA row 삽입 오류");
                 strMessage ="기본 USER_DATA row 삽입 오류";
+                Application.Quit(); //네트워크 오류일 가능성이 있기에 종료
                 return false;
             }
 
@@ -101,7 +108,12 @@ public class BackendManager : Singleton<BackendManager>
         else
         {
             //회원가입 실패 시
-            if (broSignUp.StatusCode == 400) //디바이스 정보 없음
+            if (broSignUp.StatusCode == 0)
+            {
+                Debug.Log(broSignUp.Message);
+                strMessage = "서버 접속 오류 네트워트 환경을 확인해주세요";
+            }
+            else if (broSignUp.StatusCode == 400) //디바이스 정보 없음
             {
                 strMessage = "회원가입 실패 디바이스 정보 null";
             }
@@ -138,16 +150,23 @@ public class BackendManager : Singleton<BackendManager>
             BackendReturnObject broNickName = Backend.BMember.CreateNickname(strNickName);
             if (broNickName.IsSuccess())
             {
-                //GameScene으로 이동
+                //return true 시 NickNamePanel.cs에서 GameScene으로 이동
                 strMessage = Backend.UserNickName+"님 환영합니다!";
                 Param param = new Param();
                 param.Add("NickName", Backend.UserNickName);
+                //닉네임 업데이트가 완료되고 넘어가야하기에 동기 방식으로 호출
                 BackendReturnObject bro = Backend.GameData.Update("USER_DATA",new Where(), param);
                 if (bro.IsSuccess()) 
                 {
                     Debug.Log(bro);
+                    return true;
                 }
-                return true;
+                else
+                {
+                    Debug.LogError("USER_DATA에 NickName 컬럼 수정 실패" + bro.Message);
+                    return false;
+                }
+                
                 
             }
             {
@@ -160,7 +179,12 @@ public class BackendManager : Singleton<BackendManager>
         }
         else //닉네임 중복체크 중 오류가 날 시
         {
-            if (broCheckName.StatusCode == 400)
+            if (broCheckName.StatusCode == 0)
+            {
+                Debug.Log(broCheckName.Message);
+                strMessage = "서버 접속 오류 네트워트 환경을 확인해주세요";
+            }
+            else if (broCheckName.StatusCode == 400)
             {
                 strMessage = "닉네임은 앞뒤 공백없이 20자 내로 설정해주세요";
                 //Debug.Log(broCheckName.Message);
@@ -196,7 +220,7 @@ public class BackendManager : Singleton<BackendManager>
                 else
                 {
                     //받아온 json데이터를 GameManager에 넘겨 세팅한다.
-                    //추후 GameManager에서 값 할당이 완료되면 LoadingScene에서 GameScene으로 넘어간다.
+                    //추후 GameManager에서 값 할당이 완료되면 LoadingScene에서 GameScene으로 넘어간다
                     GameManager.Instance.SetUserData(gameDataJason);
                     return;
                 }
@@ -221,5 +245,67 @@ public class BackendManager : Singleton<BackendManager>
                 Application.Quit();
             }
         });
+    }
+
+
+    //비동기로 뒤끝 서버에 USER_DATA저장 (isLogOut true시 로그아웃)
+    //GameScene에서 Stage 클리어 시 자동저장
+    //GameScene에서 메뉴패널을 열고 저장및로그아웃 버튼을 누를시 로그아웃 및 씬 전환
+    public void SaveUserData(bool isLogOut = false)
+    {
+        //넘겨줄 데이터 Param으로 추가
+        Param param = new Param();
+        param.Add("Stage", GameManager.Instance.Stage);
+        param.Add("Money", GameManager.Instance.CurrentMoney);
+        param.Add("AttackDamage", GameManager.Instance.AttackDamage);
+        param.Add("AttackSpeed", GameManager.Instance.AttackSpeed);
+        param.Add("MoveSpeed", GameManager.Instance.MoveSpeed);
+        param.Add("CriticalProb", GameManager.Instance.CriticalProb);
+        param.Add("CriticalRatio", GameManager.Instance.CriticalRatio);
+        param.Add("AttackDamageLv", GameManager.Instance.AttackDamageLv);
+        param.Add("AttackSpeedLv", GameManager.Instance.AttackSpeedLv);
+        param.Add("MoveSpeedLv", GameManager.Instance.MoveSpeedLv);
+        param.Add("CriticalProbLv", GameManager.Instance.CriticalProbLv);
+        param.Add("CriticalRatioLv", GameManager.Instance.CriticalRatioLv);
+        param.Add("AttackDamagePrice", GameManager.Instance.AttackDamagePrice);
+        param.Add("AttackSpeedPrice", GameManager.Instance.AttackSpeedPrice);
+        param.Add("MoveSpeedPrice", GameManager.Instance.MoveSpeedPrice);
+        param.Add("CriticalProbPrice", GameManager.Instance.CriticalProbPrice);
+        param.Add("CriticalRatioPrice", GameManager.Instance.CriticalRatioPrice);
+
+        // 비동기 저장
+        Backend.GameData.Update("USER_DATA",new Where(),param, (bro) =>
+        {
+            if (bro.IsSuccess())
+            {
+                Debug.Log("데이터 저장완료!");
+                //만약 저장후 logOut true로 설정시 비동기로 로그아웃 후 TitleScene으로 넘어간다.
+                if (isLogOut)
+                {
+                    Backend.BMember.Logout((broLogOut) =>
+                    {
+                        if (broLogOut.IsSuccess())
+                        {
+                            Debug.Log("로그아웃 성공");
+                            //로그아웃 성공 시 TitleScene으로 이동
+                            //(혹시나 현재 이미 TitleScene인데 이동하려고 하면 GameManager함수에서 동작하지 않도록 설정해두었다.)
+                            GameManager.Instance.LoadSceneWithTime("TitleScene", 2f); //2f는 FadeInOutPanel이 FadeOut하도록 기다림
+                        }
+                        else
+                        {
+                            Debug.LogError("로그아웃 실패 : " + broLogOut);
+                            Application.Quit();
+                        }
+                    });
+                }
+
+            }
+            else
+            {
+                Debug.Log("데이터Update실패 : " + bro);
+                Application.Quit();
+            }
+        });
+
     }
 }
