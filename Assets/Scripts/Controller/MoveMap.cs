@@ -63,7 +63,7 @@ public class MoveMap : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (GameManager.Instance.IsMove)
+        if (GameManager.Instance.IsMove && Time.timeScale != 0)
         {
             Move();
         }

@@ -19,8 +19,11 @@ public class PlayerControl : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        CheckEnemy();
-        SetAnimation();
+        if(Time.timeScale != 0)
+        {
+            CheckEnemy();
+            SetAnimation();
+        }
     }
 
     //Raycast로 앞에 적이 있을 시 GameManager에 알려주고 전투 준비

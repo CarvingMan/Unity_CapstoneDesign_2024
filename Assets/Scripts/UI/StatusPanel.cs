@@ -40,7 +40,21 @@ public class StatusPanel : MonoBehaviour
         m_btnLvUp.onClick.AddListener(ClickToLvUp);
     }
 
+    private void Update()
+    {
+        if(Time.timeScale == 0 && m_btnLvUp.interactable == true)
+        {
+            m_btnLvUp.interactable = false;
+        }
+        else if(Time.timeScale != 0 && m_btnLvUp.interactable == false)
+        {
+            m_btnLvUp.interactable= true;
+        }
+        else
+        {
 
+        }
+    }
 
     //단위 별로(K,M,B) 텍스트로 변환 시켜 반환 
     string ConvertFloatToText(double dNumber)

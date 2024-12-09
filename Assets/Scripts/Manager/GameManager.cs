@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using DG.Tweening;
 
 public class GameManager : Singleton<GameManager>
 {
@@ -162,12 +163,15 @@ public class GameManager : Singleton<GameManager>
     // Update is called once per frame
     void Update()
     {
-        //만약 GameScene에 처음 들어올 때 
-        //Field 몬스터를 설정 해 주어야 한다.
-        if(SceneManager.GetActiveScene().name == "GameScene" && m_isInGameScene == false)
+        if(Time.timeScale != 0)
         {
-            m_isInGameScene = true; //나중에 씬을 나갈때 false로 설정
-            SetFieldStage(false); //처음 혹은 다시 씬에 들어왔을 때 이므로 매개변수는 false로 하여 m_nCurrentMobNo는 그대로 유지
+            //만약 GameScene에 처음 들어올 때 
+            //Field 몬스터를 설정 해 주어야 한다.
+            if (SceneManager.GetActiveScene().name == "GameScene" && m_isInGameScene == false)
+            {
+                m_isInGameScene = true; //나중에 씬을 나갈때 false로 설정
+                SetFieldStage(false); //처음 혹은 다시 씬에 들어왔을 때 이므로 매개변수는 false로 하여 m_nCurrentMobNo는 그대로 유지
+            }
         }
 
         if (Input.GetKeyDown(KeyCode.Escape))
@@ -185,6 +189,15 @@ public class GameManager : Singleton<GameManager>
         {
             if (!m_isCorLoadScene && SceneManager.GetActiveScene().name != strSceneName)
             {
+                //만약 씬 이동시 timeScale이 0이라면 다시 1로 바꾸어준다.
+                //예로 바로 위 조건문에서 GameScene -> TitleScene이동시 
+                //메뉴 페널을 열어(timeScale = 0이된다.) 로그아웃 버튼을 누른 상황에서 timeScale을 1로 바꾸어 주어야 한다. 
+                //또한 timeScale이 0일 시 코루틴의 WaitForSecond가 무한대기 되기에 미리 1로 바꾸어 주어야 한다.
+                if (Time.timeScale == 0)
+                {
+                    Time.timeScale = 1;
+                }
+                //코루틴 실행
                 StartCoroutine(CorLoadScene(strSceneName, fTime));
             }
         }
@@ -193,28 +206,25 @@ public class GameManager : Singleton<GameManager>
     IEnumerator CorLoadScene(string strSceneName, float fTime)
     {
         m_isCorLoadScene = true;
-        if(SceneManager.GetActiveScene().name == "GameScene") //만약 게임 씬이라면
-        {
-            //씬 이동하며 m_isInGameScene을 false로 해 주어야 한다. 
-            //이후 다시 GameScene으로 들어올 시 update()에서 SetFieldStage(false);
-            m_isInGameScene = false;
-        }
+
+        yield return new WaitForSeconds(fTime);
 
         //만약 타이틀 씬으로 이동한다면 로그아웃 되었다는 뜻이므로 m_isInitUserData를 false로 초기화
-        if(strSceneName == "TitleScene")
+        if (strSceneName == "TitleScene")
         {
             m_isInitUserData = false;
         }
 
-        //만약 씬 이동시 timeScale이 0이라면 다시 1로 바꾸어준다.
-        //예로 바로 위 조건문에서 GameScene -> TitleScene이동시 
-        //메뉴 페널을 열어(timeScale = 0이된다.) 로그아웃 버튼을 누른 상황에서 timeScale을 1로 바꾸어 주어야 한다. 
-        if(Time.timeScale == 0) 
-        {
-            Time.timeScale = 1;
-        }
 
-        yield return new WaitForSeconds(fTime);
+        if (SceneManager.GetActiveScene().name == "GameScene") //만약 게임 씬이라면
+        {
+            //씬 이동하며 m_isInGameScene을 false로 해 주어야 한다. 
+            //이후 다시 GameScene으로 들어올 시 update()에서 SetFieldStage(false);
+            //해당 로직은 WaitForSeconds이후 씬 전환 직전에 해야한다.
+            m_isInGameScene = false;
+        }
+        
+        DOTween.KillAll(); //현재 실행중인 Tween들을 모두 Kill하고 넘어간다.
         m_isCorLoadScene = false;
         SceneManager.LoadScene(strSceneName);
     }

@@ -40,18 +40,21 @@ public class FieldMobControl : MonoBehaviour
 
     private void Update()
     {
-        if (m_objHpBar != null) 
+        if(Time.timeScale != 0)
         {
-            //(수정)넘겨받은 EnemyHpBar프리팹이 m_trHpBarPos.position을 따라올 수 있도록
-            //(수정)m_objHpBar.transform.position = Camera.main.WorldToScreenPoint(m_trHpBarPos.position);
+            if (m_objHpBar != null)
+            {
+                //(수정)넘겨받은 EnemyHpBar프리팹이 m_trHpBarPos.position을 따라올 수 있도록
+                //(수정)m_objHpBar.transform.position = Camera.main.WorldToScreenPoint(m_trHpBarPos.position);
 
-            // 위 주석 코드에서 아래로 변경 : CameraResolution.cs와 함께
-            // Canvas Render mode를 screen space- camera 에서 Main camera로 지정하여 실행 시 UI좌표가 월드 좌표로 변경
-            m_objHpBar.transform.position = m_trHpBarPos.position;
-        }
-        else
-        {
-            Debug.LogError("m_objHpBar가 없습니다.");
+                // 위 주석 코드에서 아래로 변경 : CameraResolution.cs와 함께
+                // Canvas Render mode를 screen space- camera 에서 Main camera로 지정하여 실행 시 UI좌표가 월드 좌표로 변경
+                m_objHpBar.transform.position = m_trHpBarPos.position;
+            }
+            else
+            {
+                Debug.LogError("m_objHpBar가 없습니다.");
+            }
         }
     }
 

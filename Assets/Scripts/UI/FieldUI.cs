@@ -17,10 +17,15 @@ public class FieldUI : MonoBehaviour
     GameObject m_objCoinImage = null; //CoinPanel의 Coin이미지
 
     [SerializeField]
-    TextMeshProUGUI m_textMoney = null;
+    TextMeshProUGUI m_tmpMoney = null;
 
     [SerializeField]
-    TextMeshProUGUI m_textStage = null;
+    TextMeshProUGUI m_tmpStage = null;
+
+    [SerializeField]
+    Button m_btnMenu = null; //메뉴 버튼
+    [SerializeField]
+    GameObject m_objMenuPanel = null; //메뉴 panel
 
     Sequence m_seqStage = null;
     Sequence m_seqMoney = null;
@@ -28,32 +33,59 @@ public class FieldUI : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+
         GameManager.Instance.TakeObject(gameObject);
         SetStageText(GameManager.Instance.CurrentStage);
         SetMoneyText(0, GameManager.Instance.CurrentMoney,false);
+        if(m_objMenuPanel == null)
+        {
+            Debug.LogError("m_objMenuPanel이 없습니다."+gameObject.name);
+        }
+
+        if(m_btnMenu != null)
+        {
+            m_btnMenu.onClick.AddListener(ClickMenuBtn);
+        }
+        else
+        {
+            Debug.LogError("m_btnMenu가 없습니다." + gameObject.name);
+        }
     }
 
+    //m_btnMenu onClick AddListener에 추가할 함수
+    //timeScale = 0, m_objMenuPanel Active
+    void ClickMenuBtn()
+    {
+        if (m_objMenuPanel != null) 
+        {
+            if (Time.timeScale != 0)
+            {
+                Time.timeScale = 0;
+            }
+            m_objMenuPanel.SetActive(true);
+        }
+    }
 
     //Stage Text를 Tweening하여 표시
     public void SetStageText(int nStage)
     {
-        if(m_textStage != null)
+        if(m_tmpStage != null)
         {
             string strText = "Stage" + nStage.ToString();
             Tween FadeOut = DOTween.To(() => 1.0f, (alpha) =>
             {
-                Color color = m_textStage.color;
+                Color color = m_tmpStage.color;
                 color.a = alpha;
-                m_textStage.color = color;
+                m_tmpStage.color = color;
             }, 0, 0.5f); ;
             Tween FadeIn = DOTween.To(() => 0.0f, alpha =>
             {
-                Color color = m_textStage.color;
+                Color color = m_tmpStage.color;
                 color.a = alpha;
-                m_textStage.color = color;
+                m_tmpStage.color = color;
             }, 1, 2);
             //DOTween 무료 버전은 DoText 함수를 textMeshPro를 지원하지 않지만 아래처럼, DOTween.To()를 통해 사용가능하다.
-            Tween tweenText = DOTween.To(() => "", (str) => m_textStage.text = str, strText, 0.5f);
+            Tween tweenText = DOTween.To(() => "", (str) => m_tmpStage.text = str, strText, 0.5f);
             if(m_seqStage != null && m_seqStage.IsActive())
             {
                 m_seqStage.Kill();
@@ -87,7 +119,7 @@ public class FieldUI : MonoBehaviour
     //FieldUI의 money UI창의 money text 표시
     public void SetMoneyText(float fWaitTime, long lCurrentMoney, bool isSound = true, bool isGet = true)
     {
-        if(m_textMoney != null)
+        if(m_tmpMoney != null)
         {
             double dMoney = lCurrentMoney;
             string strMoney = "";
@@ -116,13 +148,13 @@ public class FieldUI : MonoBehaviour
                 }
             }
 
-            if (m_textMoney != null)
+            if (m_tmpMoney != null)
             {
 
                 float fTweenTime = 0.5f / GameManager.Instance.MoveSpeed;
 
                 //DOTween.To()를 사용하여 현재 text에서 새로들어온 text로 값 변경
-                Tween tween = DOTween.To(() => "", (str) => m_textMoney.text = str, strMoney, fTweenTime);
+                Tween tween = DOTween.To(() => "", (str) => m_tmpMoney.text = str, strMoney, fTweenTime);
                 if (m_seqMoney != null && m_seqMoney.IsActive())
                 {
                     m_seqMoney.Kill();
