@@ -14,6 +14,8 @@ public class MenuPanel : MonoBehaviour
     Button m_btnClose = null; //메뉴창 닫기 버튼
     [SerializeField] 
     Button m_btnLogOutBtn = null; //저장 및 로그아웃 버튼
+    [SerializeField]
+    TextMeshProUGUI m_tmpNickName = null;
 
     //저장 및 로그아웃 버튼 누를 시 BackendManager에서 비동기로 저장 및 로그아웃을 시행할 시
     //FadeOut을 할 수 있도록 FadeInOutPanel.cs가 부착된 패널 사용
@@ -23,11 +25,19 @@ public class MenuPanel : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        if(m_tmpNickName != null)
+        {
+            m_tmpNickName.text = BackendManager.Instance.NickName + " 님";
+        }
+        else
+        {
+            Debug.LogError("m_tmpNickName이 없습니다.");
+        }
+
         if(m_objFadeInOutPanel == null)
         {
             Debug.LogError("m_objFadeInOutPanel이 없습니다." + gameObject.name);
         }
-
         if(m_btnClose != null)
         {
             m_btnClose.onClick.AddListener(ClickCloseBtn);
@@ -69,11 +79,6 @@ public class MenuPanel : MonoBehaviour
     //BackendManger에서 비동기로 저장 및 로그아웃 후 타이틀 화면으로 이동
     void ClickLogOutBtn()
     {
-        if (m_btnClose != null)
-        {
-            //저장 및 로그아웃 버튼을 눌렀을 때, Close버튼을 눌러 timeScale이 1이 되어 게임이 동작하는 것을 방지
-            m_btnClose.interactable = false; //Close버튼 비활성화
-        }
 
         //FadeOut
         if (m_objFadeInOutPanel != null)
@@ -83,7 +88,10 @@ public class MenuPanel : MonoBehaviour
 
         //BackendManager의 SaveUserData의 매개변수 isLogOut을 true로 넘겨주게되면,
         //비동기 정보 업데이트가 완료될시 -> 비동기 로그아웃 -> TileScene이동
+        //timeScale은 로그 아웃 완료후 GameManager에서 Scene이동전에 1로 바꾸어 준다.
         BackendManager.Instance.SaveUserData(true);
 
+        m_btnLogOutBtn.interactable = false; //더이상 저장 및 로그아웃 버튼을 누를 수 없게 설정
+        gameObject.SetActive(false);
     }
 }

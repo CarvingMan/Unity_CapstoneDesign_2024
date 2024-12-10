@@ -16,6 +16,12 @@ public class GameManager : Singleton<GameManager>
     //유저 데이터 불러왔는지 확인용 -> 로그아웃 시 초기화
     bool m_isInitUserData = false; //로딩씬이고 해당 변수가 false이면 뒤끝서버에서 데이터를 가져온다.
     public bool IsInitUserData { get { return m_isInitUserData; } }
+    //접속보상을 위한 멤버 변수 -> LoadingScene에서 데이터를 불러올때 UpdateAt이 현재 시간보다 1시간 이상 차이날 경우 
+    //접속 시간별 보상 최대 24시간 (m_nStage * coinPrice * 재접속 시간 차)
+    bool m_isEntryReward = false;
+    public bool IsEntryReward { get { return m_isEntryReward; } }
+    long m_nEntryReward = 0;
+    public long EntryReWard { get { return m_nEntryReward; } }
 
     //***스테이지(Field) 관련***//
     int m_nStage = 1; //현재 Stage -> LoadingScene에서 서버에서 받아옴
@@ -213,6 +219,7 @@ public class GameManager : Singleton<GameManager>
         if (strSceneName == "TitleScene")
         {
             m_isInitUserData = false;
+            m_isEntryReward = false; // 접속보상도 초기화
         }
 
 
@@ -222,6 +229,13 @@ public class GameManager : Singleton<GameManager>
             //이후 다시 GameScene으로 들어올 시 update()에서 SetFieldStage(false);
             //해당 로직은 WaitForSeconds이후 씬 전환 직전에 해야한다.
             m_isInGameScene = false;
+
+            //추가적인 "GameScene"변수들 초기화 돈, 능력치 값 등은 재 로그인시 다시 초기화 된다.
+            m_isMove = false;
+            m_isPlayerAttack = false;
+            m_isFieldBattle = false;
+            m_nCurrentMobNo = 0;
+            m_objCurrentMob = null;
         }
         
         DOTween.KillAll(); //현재 실행중인 Tween들을 모두 Kill하고 넘어간다.
@@ -239,6 +253,7 @@ public class GameManager : Singleton<GameManager>
             //스테이지 및 돈 저장
             m_nStage = int.Parse(jsonData[0]["Stage"].ToString());
             m_lCurrentMoney = long.Parse(jsonData[0]["Money"].ToString());
+            //Debug.Log(m_lCurrentMoney);
 
             //능력치 값 저장
             m_dAttackDamage = double.Parse(jsonData[0]["AttackDamage"].ToString());
@@ -261,8 +276,39 @@ public class GameManager : Singleton<GameManager>
             m_lCriticalProbPrice = long.Parse(jsonData[0]["CriticalProbPrice"].ToString());
             m_lCriticalRatioPrice = long.Parse(jsonData[0]["CriticalRatioPrice"].ToString());
 
+            //접속 보상을 위해 마지막 업데이트 시간 전달 //ISO 8601 형식의 UTC 이기에 로컬타임으로 변경
+            System.DateTime lastUpdateDate = System.DateTime.Parse(jsonData[0]["updatedAt"].ToString()).ToLocalTime();
+            SetEntryReward(lastUpdateDate);
+
             m_isInitUserData = true;
         }
+    }
+
+    //위 SetUserData에서 받아온 USER_DATA의 updatedAt 시간이 현재 시간과 1시간 이상 차이가 난다면 접속 보상 설정
+    //m_nStage * m_nCoinPrice * (현재시간 - updatedAt(최근 저장시간)) 을 보상(최대 24시간 차이)
+    void SetEntryReward(System.DateTime lastDatetime)
+    {
+        System.TimeSpan dateSpan = System.DateTime.Now - lastDatetime;
+        //dateSpan의 TotalHours(최근 저장시간 과 현재 접속시간 차이) 를 소수점 버림하여 저장
+        int nHourSpan = (int)System.Math.Truncate(dateSpan.TotalHours);
+        nHourSpan = Mathf.Clamp(nHourSpan, 0, 24); //최대 24시간으로 고정 -> 2일 만에 접속해도 최대보상은 24시간이다.
+        
+        if (nHourSpan >= 1)
+        {
+            // (nHourSpan * 10 * 현재 스테이지) 로 접속보상금 설정 -> Stage가 오를 수록 접속보상도 커 진다. 
+            m_nEntryReward = nHourSpan * m_nCoinPrice * m_nStage; 
+            m_isEntryReward = true;
+            Debug.Log("시간 누적" + nHourSpan.ToString());
+            Debug.Log("접속 보상 골드 " + m_nEntryReward + " G");
+        }
+        else
+        {
+            //만약 시간차가 1시간 미만일 때 -> 처음 회원가입 또는 1시간 내로 접속 시 보상은 없다.
+            m_isEntryReward = false;
+            Debug.Log("시간 누적" + nHourSpan.ToString());
+            Debug.Log("접속 보상 없음");
+        }
+
     }
 
     //GameManager에서 필요한 오브젝트들을 넘겨주는 함수 -> 각각의 Start()에서 넘겨준다.

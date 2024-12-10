@@ -11,7 +11,8 @@ public class BackendManager : Singleton<BackendManager>
     /*
      * 뒤끝 SDK 사용하여 Backend 관리
      */
-
+    string m_strNickName = "";
+    public string NickName { get { return m_strNickName; } }
 
     // Start is called before the first frame update
     void Start()
@@ -45,6 +46,7 @@ public class BackendManager : Singleton<BackendManager>
         if (bro.IsSuccess())
         {
             strMessage = Backend.UserNickName + "님 환영합니다.";
+            m_strNickName = Backend.UserNickName;
             //retuen true 시 SignInPanel.cs에서 GameScene으로 이동
             return true;
         }
@@ -159,6 +161,7 @@ public class BackendManager : Singleton<BackendManager>
                 if (bro.IsSuccess()) 
                 {
                     Debug.Log(bro);
+                    m_strNickName = Backend.UserNickName;
                     return true;
                 }
                 else
@@ -231,7 +234,7 @@ public class BackendManager : Singleton<BackendManager>
                 //    Debug.Log(gameDataJason[i]["AttackDamagePrice"]);
                 //    Debug.Log(gameDataJason[i]["updatedAt"]);
 
-                    
+
                 //    string updatedAtStr = gameDataJason[i]["updatedAt"].ToString();
 
                 //    //ISO 8601 형식의 UTC 이기에 로컬타임으로 변경
@@ -287,6 +290,7 @@ public class BackendManager : Singleton<BackendManager>
                         if (broLogOut.IsSuccess())
                         {
                             Debug.Log("로그아웃 성공");
+                            m_strNickName = "";
                             //로그아웃 성공 시 TitleScene으로 이동
                             //(혹시나 현재 이미 TitleScene인데 이동하려고 하면 GameManager함수에서 동작하지 않도록 설정해두었다.)
                             GameManager.Instance.LoadSceneWithTime("TitleScene", 2f); //2f는 FadeInOutPanel이 FadeOut하도록 기다림

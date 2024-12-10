@@ -15,7 +15,7 @@ public class Generator
 
     GameObject m_objCoinPrefab = null; //Coin 프리팹(Tweening)
 
-    TextMeshProUGUI m_TMPDamagePrefab = null; //DamageText 프리팹(Tweening)
+    TextMeshProUGUI m_tmpDamagePrefab = null; //DamageText 프리팹(Tweening)
 
     GameObject m_objEnemyHpBarPrefab = null; //EnemyHpBar panel UI프리팹
 
@@ -39,9 +39,9 @@ public class Generator
             m_objCoinPrefab = Resources.Load<GameObject>("Prefab/Coin/Coin");
         }
 
-        if(m_TMPDamagePrefab == null)
+        if(m_tmpDamagePrefab == null)
         {
-            m_TMPDamagePrefab = Resources.Load<TextMeshProUGUI>("Prefab/DamageText/DamageText");
+            m_tmpDamagePrefab = Resources.Load<TextMeshProUGUI>("Prefab/DamageText/DamageText");
         }
 
         if (m_objEnemyHpBarPrefab == null) 
@@ -87,6 +87,8 @@ public class Generator
 
         //HpBar프리팹 생성
         GameObject objHpBar = Object.Instantiate(m_objEnemyHpBarPrefab,canvas.transform);
+        //canvas의 최 상단으로 이동시켜 이후 MenuPanel, FadeOutPanel 등 보다 우선순위를 뒤로 한다.
+        objHpBar.GetComponent<RectTransform>().SetAsFirstSibling(); 
         //FieldMob에게 생성된 HpBar를 넘겨준다.
         objFieldMob.GetComponent<FieldMobControl>().InitHpBar(objHpBar);
     }
@@ -99,9 +101,11 @@ public class Generator
         {
             //프리팹 인스턴스화
             GameObject objCoin = Object.Instantiate(m_objCoinPrefab, vecGenPos, Quaternion.identity);
+
             //생성된 Coin의 CoinMove(Transform recTarget)을 통하여 Dotween 시퀀스 생성
             //recTarget.position은 CoinMove()에서 world Position으로 변환하여 이동힌다.
             objCoin.GetComponent<CoinTween>().CoinMove(recTarget);
+
         }
     }
 
@@ -109,9 +113,11 @@ public class Generator
     public void GenerateDamageText(Canvas canvas, Vector2 vecHead, double fDamage, float fAttackSpeed, bool isCritical)
     {
         //매개인자로 넘겨받은 캔버스의 자식으로 생성
-        TextMeshProUGUI damageText = Object.Instantiate(m_TMPDamagePrefab, canvas.transform);
+        TextMeshProUGUI tmpDamage = Object.Instantiate(m_tmpDamagePrefab, canvas.transform);
+        tmpDamage.GetComponent<RectTransform>().SetAsFirstSibling();
+
         //Tweening 시작
-        damageText.GetComponent<DamageText>().SetDamageText(vecHead,fDamage, fAttackSpeed, isCritical);
+        tmpDamage.GetComponent<DamageText>().SetDamageText(vecHead,fDamage, fAttackSpeed, isCritical);
         
     }
 }
