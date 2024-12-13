@@ -58,11 +58,11 @@ public class FieldUI : MonoBehaviour
     {
         if (m_objMenuPanel != null) 
         {
+            m_objMenuPanel.SetActive(true);
             if (Time.timeScale != 0)
             {
                 Time.timeScale = 0;
             }
-            m_objMenuPanel.SetActive(true);
         }
     }
 

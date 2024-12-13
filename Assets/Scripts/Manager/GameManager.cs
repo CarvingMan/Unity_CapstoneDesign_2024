@@ -18,15 +18,18 @@ public class GameManager : Singleton<GameManager>
     public bool IsInitUserData { get { return m_isInitUserData; } }
     //접속보상을 위한 멤버 변수 -> LoadingScene에서 데이터를 불러올때 UpdateAt이 현재 시간보다 1시간 이상 차이날 경우 
     //접속 시간별 보상 최대 24시간 (m_nStage * coinPrice * 재접속 시간 차)
+    //SetUserData에서 할당
     bool m_isEntryReward = false;
     public bool IsEntryReward { get { return m_isEntryReward; } }
     long m_nEntryReward = 0;
-    public long EntryReWard { get { return m_nEntryReward; } }
+    public long EntryReward { get { return m_nEntryReward; } }
+    int m_nEntryHourSpan = 0; //현재 - 최근 접속시간 차
+    public int EntryHourSpan { get { return m_nEntryHourSpan; } }
 
     //***스테이지(Field) 관련***//
     int m_nStage = 1; //현재 Stage -> LoadingScene에서 서버에서 받아옴
-    public int Stage {  get { return m_nStage; } }
-    public int CurrentStage {  get { return m_nStage; } }
+    public int Stage { get { return m_nStage; } }
+    public int CurrentStage { get { return m_nStage; } }
     const int m_nMaxFieldMob = 7; //Stage 당 몬스터 수
     int m_nCurrentMobNo = 0; //현재 대치중인 field mob 번호 -> 8마리를 잡을 시 Stage++;
     public int CurrentMonNo { get { return m_nCurrentMobNo; } }
@@ -55,14 +58,14 @@ public class GameManager : Singleton<GameManager>
     }
 
     //* 능력치 레벨 *// -> LoadingScene에서 뒤끝 서버에서 받아옴
-    int m_nAttackDamageLv = 1; 
+    int m_nAttackDamageLv = 1;
     int m_nAttackSpeedLv = 1;
     int m_nMoveSpeedLv = 1;
     int m_nCriticalProbLv = 1;
     int m_nCriticalRatioLv = 1;
     public int AttackDamageLv { get { return m_nAttackDamageLv; } }
     public int AttackSpeedLv { get { return m_nAttackSpeedLv; } }
-    public int MoveSpeedLv { get {  return m_nMoveSpeedLv; } }
+    public int MoveSpeedLv { get { return m_nMoveSpeedLv; } }
     public int CriticalProbLv { get { return m_nCriticalProbLv; } }
     public int CriticalRatioLv { get { return m_nCriticalRatioLv; } }
 
@@ -82,7 +85,7 @@ public class GameManager : Singleton<GameManager>
     public double AttackDamage { get { return m_dAttackDamage; } }
     public float AttackSpeed { get { return m_fAttackSpeed; } }
     public float MoveSpeed { get { return m_fMoveSpeed; } }
-    public float CriticalProb { get{ return m_fCriticalProb; } }
+    public float CriticalProb { get { return m_fCriticalProb; } }
     public float CriticalRatio { get { return m_fCriticalRatio; } }
 
     //**레벨업 관련**//
@@ -97,10 +100,10 @@ public class GameManager : Singleton<GameManager>
     long m_lCriticalProbPrice = 100;
     long m_lCriticalRatioPrice = 100;
     public long AttackDamagePrice { get { return m_lAttackDamagePrice; } }
-    public long AttackSpeedPrice { get {return m_lAttackSpeedPrice; } }
-    public long MoveSpeedPrice { get {return m_lMoveSpeedPrice; } }
-    public long CriticalProbPrice { get {return m_lCriticalProbPrice; } }
-    public long CriticalRatioPrice { get {return m_lCriticalRatioPrice; } }
+    public long AttackSpeedPrice { get { return m_lAttackSpeedPrice; } }
+    public long MoveSpeedPrice { get { return m_lMoveSpeedPrice; } }
+    public long CriticalProbPrice { get { return m_lCriticalProbPrice; } }
+    public long CriticalRatioPrice { get { return m_lCriticalRatioPrice; } }
 
     //가격 인상률
     const float m_fDamagePriceInc = 1.04f; //m_fAttackDamage가격 인상률
@@ -115,7 +118,7 @@ public class GameManager : Singleton<GameManager>
     bool m_isFieldBattle = false; //전투중일 시 true
     public bool IsFieldBattle { get { return m_isFieldBattle; } }
     bool m_isPlayerAttack = false; //true시 플레이어가 attack 애니메이션을 play하고 animation 클립 이벤트에서 공격관련 함수 호출
-    public bool IsPlayerAttack { get { return m_isPlayerAttack; } } 
+    public bool IsPlayerAttack { get { return m_isPlayerAttack; } }
     GameObject m_objCurrentMob = null; //현재 player와 대치중인 monster
     public GameObject CurrentMob { get { return m_objCurrentMob; } }
 
@@ -128,12 +131,12 @@ public class GameManager : Singleton<GameManager>
 
     //이동관련 제어 멤버 변수 MoveBackGround,PlayerControl,MonsterControl등에서 사용
     private bool m_isMove = false;
-    public bool IsMove { get { return m_isMove; }} //m_isMove 접근용 read only로 get만 가능
+    public bool IsMove { get { return m_isMove; } } //m_isMove 접근용 read only로 get만 가능
 
 
     //코루틴 제어 변수
     bool m_isCorLoadScene = false;
-    
+
 
     //***GameManager에게 넘겨받을 인스턴스들***//
     //각각의 Start()에서 넘겨준다.
@@ -144,7 +147,7 @@ public class GameManager : Singleton<GameManager>
     //*** 직접 객체생성***//
     Generator m_csGenerator = new Generator();
 
-    
+
 
     // 부모 Singleton의 Awake()가 존재하기에 해당 Awake()를 무시하지 않고 GameManager의 Awake()를 
     // 정의 하려면 오버라이드 한 후 base.Awake() 즉, 부모 Awake()를 호출해야한다. 
@@ -164,12 +167,12 @@ public class GameManager : Singleton<GameManager>
         m_isInGameScene = false;
 
     }
- 
+
 
     // Update is called once per frame
     void Update()
     {
-        if(Time.timeScale != 0)
+        if (Time.timeScale != 0)
         {
             //만약 GameScene에 처음 들어올 때 
             //Field 몬스터를 설정 해 주어야 한다.
@@ -191,7 +194,7 @@ public class GameManager : Singleton<GameManager>
     //아래의 함수를 통해 원하는 초를 지정하여 이동
     public void LoadSceneWithTime(string strSceneName, float fTime = 0)
     {
-        if(strSceneName != null && strSceneName.Length > 0)
+        if (strSceneName != null && strSceneName.Length > 0)
         {
             if (!m_isCorLoadScene && SceneManager.GetActiveScene().name != strSceneName)
             {
@@ -208,7 +211,7 @@ public class GameManager : Singleton<GameManager>
             }
         }
     }
-    
+
     IEnumerator CorLoadScene(string strSceneName, float fTime)
     {
         m_isCorLoadScene = true;
@@ -220,6 +223,8 @@ public class GameManager : Singleton<GameManager>
         {
             m_isInitUserData = false;
             m_isEntryReward = false; // 접속보상도 초기화
+            m_nEntryReward = 0;
+            m_nEntryHourSpan = 0;
         }
 
 
@@ -237,7 +242,7 @@ public class GameManager : Singleton<GameManager>
             m_nCurrentMobNo = 0;
             m_objCurrentMob = null;
         }
-        
+
         DOTween.KillAll(); //현재 실행중인 Tween들을 모두 Kill하고 넘어간다.
         m_isCorLoadScene = false;
         SceneManager.LoadScene(strSceneName);
@@ -292,11 +297,12 @@ public class GameManager : Singleton<GameManager>
         //dateSpan의 TotalHours(최근 저장시간 과 현재 접속시간 차이) 를 소수점 버림하여 저장
         int nHourSpan = (int)System.Math.Truncate(dateSpan.TotalHours);
         nHourSpan = Mathf.Clamp(nHourSpan, 0, 24); //최대 24시간으로 고정 -> 2일 만에 접속해도 최대보상은 24시간이다.
-        
+
         if (nHourSpan >= 1)
         {
             // (nHourSpan * 10 * 현재 스테이지) 로 접속보상금 설정 -> Stage가 오를 수록 접속보상도 커 진다. 
-            m_nEntryReward = nHourSpan * m_nCoinPrice * m_nStage; 
+            m_nEntryReward = nHourSpan * m_nCoinPrice * m_nStage;
+            m_nEntryHourSpan = nHourSpan;
             m_isEntryReward = true;
             Debug.Log("시간 누적" + nHourSpan.ToString());
             Debug.Log("접속 보상 골드 " + m_nEntryReward + " G");
@@ -321,7 +327,7 @@ public class GameManager : Singleton<GameManager>
         else if (obj.CompareTag("TileMap"))
         {
             m_objGrounds = obj;
-            
+
         }
         else if (obj.CompareTag("FieldUI"))
         {
@@ -329,7 +335,7 @@ public class GameManager : Singleton<GameManager>
         }
         else
         {
-            Debug.LogError(obj.name.ToString()+"를 GameManager에서 필요로 하지 않습니다.");
+            Debug.LogError(obj.name.ToString() + "를 GameManager에서 필요로 하지 않습니다.");
         }
     }
 
@@ -339,7 +345,7 @@ public class GameManager : Singleton<GameManager>
     //돈 증가(리워드)
     void MoneyReward(int nCoin)
     {
-        if(m_nStage <= 1)
+        if (m_nStage <= 1)
         {
             //스테이지가 1일 경우에는 CoinPrice에 Coin 수만큼 곱하여 기존 값에 더해준다.
             m_lCurrentMoney += nCoin * m_nCoinPrice;
@@ -348,16 +354,16 @@ public class GameManager : Singleton<GameManager>
         {
             //스테이지가 2 이상일 경우 현재 스테이지-1에서 m_fMoneyInc를 곱한 값을 m_nCoinPrice에 곱해준다.
             //FieldMob 체력증가와 같은 방식, Stage가 오를 수록 자동으로 보상도 커진다.
-            float fPrice = ((m_nStage - 1) *m_fMoneyInc) * m_nCoinPrice;
+            float fPrice = ((m_nStage - 1) * m_fMoneyInc) * m_nCoinPrice;
             //m_nCurrentMoney 가 long type이므로 fPrice를 반올림한Int로 바꾸어 nCoin 수 만큼 곱해준다.
             m_lCurrentMoney += nCoin * Mathf.RoundToInt(fPrice);
         }
 
-        if (m_objFieldUI != null) 
+        if (m_objFieldUI != null)
         {
             float fWaitTime = m_fCoinMoveTime / m_fMoveSpeed;
             //FieldUI의 moneyText를 현재 값으로 변경해준다.(Tween 변환)
-            m_objFieldUI.GetComponent<FieldUI>().SetMoneyText(fWaitTime, m_lCurrentMoney,true,true);   
+            m_objFieldUI.GetComponent<FieldUI>().SetMoneyText(fWaitTime, m_lCurrentMoney, true, true);
         }
         else
         {
@@ -365,11 +371,15 @@ public class GameManager : Singleton<GameManager>
         }
     }
 
-    //위 MoneyReward()는 몹 사냥후 코인 얻을 때 로직이며 코인 tween없이 즉시 세팅(접속보상등)private
-    private void SetMoney(long lMoney)
+    //EntryRewardPanel.cs에서 보상받기 버튼을 눌렀을때 해당 보상금을 획득
+    public void EarnEntryReward()
     {
-        m_lCurrentMoney += lMoney;
-        if(m_objFieldUI != null)
+        if(m_nEntryReward > 0)
+        {
+            m_lCurrentMoney += m_nEntryReward;
+        }
+
+        if (m_objFieldUI != null)
         {
             m_objFieldUI.GetComponent<FieldUI>().SetMoneyText(0, m_lCurrentMoney);
         }
@@ -389,7 +399,7 @@ public class GameManager : Singleton<GameManager>
 
         if (m_objFieldUI != null)
         {
-            m_objFieldUI.GetComponent<FieldUI>().SetMoneyText(0, m_lCurrentMoney,true,false);
+            m_objFieldUI.GetComponent<FieldUI>().SetMoneyText(0, m_lCurrentMoney, true, false);
         }
         else
         {
@@ -402,9 +412,9 @@ public class GameManager : Singleton<GameManager>
     // E_Status_Type 별로 레벨업이 가능하면 진행 후 true반환, 불가능 할 시 false 반환
     public bool LevelUp(E_Status_Type eStatusType)
     {
-        if(eStatusType == E_Status_Type.AttackDamage)
+        if (eStatusType == E_Status_Type.AttackDamage)
         {
-            if(m_lAttackDamagePrice <= m_lCurrentMoney && m_nAttackDamageLv < m_nMaxDamageLv)
+            if (m_lAttackDamagePrice <= m_lCurrentMoney && m_nAttackDamageLv < m_nMaxDamageLv)
             {
                 //돈 소비
                 SpendMoney(m_lAttackDamagePrice);
@@ -550,7 +560,7 @@ public class GameManager : Singleton<GameManager>
             if (trMobParent != null)
             {
                 bool isFieldBoss = false;
-                if(m_nCurrentMobNo == m_nMaxFieldMob)
+                if (m_nCurrentMobNo == m_nMaxFieldMob)
                 {
                     isFieldBoss = true;
                 }
@@ -558,15 +568,15 @@ public class GameManager : Singleton<GameManager>
                 //Generate.cs를 통해 Field Mob 생성
                 if (m_csGenerator != null)
                 {
-                    if(m_objFieldUI != null)
+                    if (m_objFieldUI != null)
                     {
                         //FieldMob을 생성할 때 EnemyHpBar프리팹도 동시에 생성해야 한다. 둘 다 GameScene에서 생성되므로 m_objFieldUI의 부모 Canvas를 넘겨준다.
                         Canvas mainCanvas = m_objFieldUI.GetComponentInParent<Canvas>();
-                        m_csGenerator.GenerateFieldMob(isFieldBoss, trMobParent, m_objPlayer.transform.position.y,mainCanvas);
+                        m_csGenerator.GenerateFieldMob(isFieldBoss, trMobParent, m_objPlayer.transform.position.y, mainCanvas);
                     }
-                    else 
+                    else
                     {
-                    
+
                     }
                 }
                 else
@@ -593,11 +603,11 @@ public class GameManager : Singleton<GameManager>
     //플레이어가 공격했을시 치명타 확률에 따라 bool형태로 반환
     bool IsCritical()
     {
-        
+
         float fCriticalProb = m_fCriticalProb * 100;
         //1~100 정수중 랜덤 값이 m_fCriticalProb에 100을 곱한 값 보다 낮으면 치명타 성공, 클 시 실패
         //따라서 치명타 확률이 0이라면, 무조건 false이다.
-        if (Random.Range(1,101) <= fCriticalProb)
+        if (Random.Range(1, 101) <= fCriticalProb)
         {
             return true;
         }
@@ -618,7 +628,7 @@ public class GameManager : Singleton<GameManager>
     // 필드 몬스터와의 전투 (사실상 Field 몬스터는 공격을 안하므로 플레이어가 Attack하는 것)
     public void FieldBattle()
     {
-        if(m_objCurrentMob != null)
+        if (m_objCurrentMob != null)
         {
             //현재 플레이어와 대치중인 Field Monster이 살아있는지 확인
             bool isMobAlive = m_objCurrentMob.GetComponent<FieldMobControl>().GetIsAlive();
@@ -640,23 +650,23 @@ public class GameManager : Singleton<GameManager>
 
                 //대치중인 몬스터에게 플레이어의 공격력과 공속을 넘겨줘 데미지를 준다.
                 m_objCurrentMob.GetComponent<FieldMobControl>().SetDamege(fAttackDamage, m_fAttackSpeed);
-                
+
                 //DamageText프리팹(Tweening) 생성
-                if(m_csGenerator != null)
+                if (m_csGenerator != null)
                 {
                     Vector2 vecMobHead = Vector2.zero;
-                    if(m_objCurrentMob != null && m_objFieldUI)
+                    if (m_objCurrentMob != null && m_objFieldUI)
                     {
                         vecMobHead = m_objCurrentMob.GetComponent<FieldMobControl>().GetHeadPos();
                         Canvas canvas = null;
-                        
+
                         //DamageText프리팹의 부모로 들어갈 main canvas가 필요하다. 다만 성능 문제로 Find함수는 지양하기위해
                         //DamageText는 GameScene에서 생성되므로 m_objFieldUI(cavas자식 panel)가 존재하므로 GetComponetInParent로 cavas를 가져온다.
-                        if(m_objFieldUI != null)
+                        if (m_objFieldUI != null)
                         {
                             canvas = m_objFieldUI.GetComponentInParent<Canvas>();
                             //Generator.cs 의 GenerateDamageText()를 통해 Tweening하는 DamageText 프리팹 생성
-                            m_csGenerator.GenerateDamageText(canvas,vecMobHead, fAttackDamage, m_fAttackSpeed, isCritical);
+                            m_csGenerator.GenerateDamageText(canvas, vecMobHead, fAttackDamage, m_fAttackSpeed, isCritical);
                         }
                         else
                         {
@@ -679,10 +689,10 @@ public class GameManager : Singleton<GameManager>
             {
                 //Field몹이 죽었으면
                 m_isPlayerAttack = false; //플레이어의 공격을 멈춘다.
-                m_isFieldBattle=false; //전투종료
-                //추후 FieldMobControl.cs에서 GameManager의 FieldMobDie()함수를 호출하면
-                //GameManager의 SetNextField()를 호출하여 재정비 한다.
-                
+                m_isFieldBattle = false; //전투종료
+                                         //추후 FieldMobControl.cs에서 GameManager의 FieldMobDie()함수를 호출하면
+                                         //GameManager의 SetNextField()를 호출하여 재정비 한다.
+
             }
         }
         else
@@ -692,12 +702,12 @@ public class GameManager : Singleton<GameManager>
     }
 
     //***Field Monster관련 메소드***//
-    
+
     //Field 몬스터가 사망시 Reward와 다음 Field재정비
     public void FieldMobDie()
     {
         //사실 FieldBattle()에서 전부 false처리 하지만 혹시모를 상황에 다시 초기화
-        if(m_isFieldBattle && m_isPlayerAttack)
+        if (m_isFieldBattle && m_isPlayerAttack)
         {
             m_isFieldBattle = false;
             m_isPlayerAttack = false;
@@ -706,7 +716,7 @@ public class GameManager : Singleton<GameManager>
         //Coin 보상
         int nCoin = 0;// 보상할 코인 수
         //필드보스인지 아닌지에 따라 다르게 보상한다.ㄴ
-        if(m_nCurrentMobNo == m_nMaxFieldMob)
+        if (m_nCurrentMobNo == m_nMaxFieldMob)
         {
             nCoin = Random.Range(9, 13);
         }
@@ -719,10 +729,10 @@ public class GameManager : Singleton<GameManager>
         if (m_objFieldUI != null)
         {
             RectTransform recTarget = m_objFieldUI.GetComponent<FieldUI>().GetCoinUIRect();
-            if (m_objCurrentMob != null) 
+            if (m_objCurrentMob != null)
             {
                 //현재 죽은 FieldMob의 위치에 nCoin만큼 코인을 생성하여 recTarget으로 이동시킨다.
-                m_csGenerator.GenerateCoin(m_objCurrentMob.transform.position,recTarget,nCoin);
+                m_csGenerator.GenerateCoin(m_objCurrentMob.transform.position, recTarget, nCoin);
             }
             else
             {
@@ -743,7 +753,7 @@ public class GameManager : Singleton<GameManager>
         //다음 필드스테이지 재정비
         // 여기서 중요한 점은 위에 Coin Generate와 EarnMoney에서 m_nCurrentMobNo 또는 m_nStage가 필요하므로
         //SetFieldStage를 마지막에 호출하여 필요한 로직이후 m_nCurrentMobNo 또는 m_nStage를 증가시켜줘야 한다.
-        SetFieldStage(true); 
+        SetFieldStage(true);
     }
 
     //Monster Hp 세팅(FieldMob)
@@ -751,9 +761,9 @@ public class GameManager : Singleton<GameManager>
     {
         if (objEnemy.CompareTag("FieldMob"))
         {
-            if(m_nCurrentMobNo == m_nMaxFieldMob)  //만약 Stage마지막 몬스터 일 시 field boss이므로Hp가 조금 더 높다.
+            if (m_nCurrentMobNo == m_nMaxFieldMob)  //만약 Stage마지막 몬스터 일 시 field boss이므로Hp가 조금 더 높다.
             {
-                if(m_nStage == 1) //stage가 1일 때에는 증가율을 곱하지 않는다.
+                if (m_nStage == 1) //stage가 1일 때에는 증가율을 곱하지 않는다.
                 {
                     return m_fBasicFieldBossHp;
                 }
@@ -770,7 +780,7 @@ public class GameManager : Singleton<GameManager>
             {
                 //기본 field mob체력에 100% ~ 120%(미만)을 랜덤으로 곱하여 설정
                 float fHp = m_fBasicFieldMobHp * Random.Range(1, 1.2f);
-                if(m_nStage == 1)
+                if (m_nStage == 1)
                 {
                     return fHp;
                 }
